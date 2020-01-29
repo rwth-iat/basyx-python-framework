@@ -19,6 +19,9 @@ from aas.adapter.json import json_serialization, json_deserialization
 
 from aas.examples.data import example_aas_missing_attributes, example_submodel_template, \
     example_aas_mandatory_attributes, example_aas, example_concept_description
+from test._helper import testCase_for_example_aas, testCase_for_example_aas_mandatory_attributes, \
+    testCase_for_example_aas_missing_attributes, testCase_for_example_concept_description, \
+    testCase_for_example_submodel_template
 from aas.examples.data._helper import AASDataChecker
 JSON_SCHEMA_FILE = os.path.join(os.path.dirname(__file__), 'aasJSONSchemaV2.0.json')
 
@@ -58,7 +61,7 @@ class JsonSerializationDeserializationTest(unittest.TestCase):
         file.seek(0)
         json_object_store = json_deserialization.read_json_aas_file(file, failsafe=False)
         checker = AASDataChecker(raise_immediately=True)
-        example_aas.check_full_example(checker, json_object_store)
+        testCase_for_example_aas.assert_full_example(checker, json_object_store)
 
 
 class JsonSerializationDeserializationTest2(unittest.TestCase):
@@ -72,7 +75,7 @@ class JsonSerializationDeserializationTest2(unittest.TestCase):
         file.seek(0)
         json_object_store = json_deserialization.read_json_aas_file(file, failsafe=False)
         checker = AASDataChecker(raise_immediately=True)
-        example_aas_mandatory_attributes.check_full_example(checker, json_object_store)
+        testCase_for_example_aas_mandatory_attributes.assert_full_example(checker, json_object_store)
 
 
 class JsonSerializationDeserializationTest3(unittest.TestCase):
@@ -85,7 +88,7 @@ class JsonSerializationDeserializationTest3(unittest.TestCase):
         file.seek(0)
         json_object_store = json_deserialization.read_json_aas_file(file, failsafe=False)
         checker = AASDataChecker(raise_immediately=True)
-        example_aas_missing_attributes.check_full_example(checker, json_object_store)
+        testCase_for_example_aas_missing_attributes.assert_full_example(checker, json_object_store)
 
 
 class JsonSerializationDeserializationTest4(unittest.TestCase):
@@ -99,7 +102,7 @@ class JsonSerializationDeserializationTest4(unittest.TestCase):
         file.seek(0)
         json_object_store = json_deserialization.read_json_aas_file(file, failsafe=False)
         checker = AASDataChecker(raise_immediately=True)
-        example_submodel_template.check_full_example(checker, json_object_store)
+        testCase_for_example_submodel_template.assert_full_example(checker, json_object_store)
 
 
 class JsonSerializationDeserializationTest5(unittest.TestCase):
@@ -113,7 +116,7 @@ class JsonSerializationDeserializationTest5(unittest.TestCase):
         file.seek(0)
         json_object_store = json_deserialization.read_json_aas_file(file, failsafe=False)
         checker = AASDataChecker(raise_immediately=True)
-        example_concept_description.check_full_example(checker, json_object_store)
+        testCase_for_example_concept_description.assert_full_example(checker, json_object_store)
 
 
 class JsonSerializationDeserializationTest6(unittest.TestCase):
@@ -153,8 +156,9 @@ class JsonSerializationDeserializationTest6(unittest.TestCase):
         file.seek(0)
         json_object_store = json_deserialization.read_json_aas_file(file, failsafe=False)
         checker = AASDataChecker(raise_immediately=True)
-        example_aas.check_full_example(checker, json_object_store, False)
-        example_aas_mandatory_attributes.check_full_example(checker, json_object_store, False)
-        example_aas_missing_attributes.check_full_example(checker, json_object_store, False)
-        example_concept_description.check_full_example(checker, json_object_store, False)
-        example_submodel_template.check_full_example(checker, json_object_store, False)
+        testCase_for_example_aas.assert_full_example(checker, json_object_store, False)
+        testCase_for_example_aas_mandatory_attributes.assert_full_example(checker, json_object_store, False)
+        testCase_for_example_aas_missing_attributes.assert_full_example(checker, json_object_store, False)
+        testCase_for_example_concept_description.assert_full_example(checker, json_object_store, False)
+        testCase_for_example_submodel_template.assert_full_example(checker, json_object_store, False)
+        self.assertEqual(963, sum(1 for _ in checker.successful_checks))
