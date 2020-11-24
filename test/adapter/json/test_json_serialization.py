@@ -1,21 +1,25 @@
-# Copyright (c) 2020 the Eclipse BaSyx Authors
+# Copyright 2020 PyI40AAS Contributors
 #
-# This program and the accompanying materials are made available under the terms of the MIT License, available in
-# the LICENSE file of this project.
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
 #
-# SPDX-License-Identifier: MIT
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
 
 import io
 import unittest
 import json
 
-from basyx.aas import model
-from basyx.aas.adapter.json import AASToJsonEncoder, StrippedAASToJsonEncoder, write_aas_json_file, JSON_SCHEMA_FILE
+from aas import model
+from aas.adapter.json import AASToJsonEncoder, StrippedAASToJsonEncoder, write_aas_json_file, JSON_SCHEMA_FILE
 from jsonschema import validate  # type: ignore
 from typing import Set, Union
 
-from basyx.aas.examples.data import example_concept_description, example_aas_missing_attributes, example_aas, \
-    example_aas_mandatory_attributes, example_submodel_template, create_example
+from aas.examples.data import example_aas_missing_attributes, example_submodel_template, \
+    example_aas_mandatory_attributes, example_aas, create_example, example_concept_description
 
 
 class JsonSerializationTest(unittest.TestCase):
@@ -25,15 +29,16 @@ class JsonSerializationTest(unittest.TestCase):
         json_data = json.dumps(test_object, cls=AASToJsonEncoder)
 
     def test_random_object_serialization(self) -> None:
-        asset_key = (model.Key(model.KeyElements.ASSET, True, "asset", model.KeyType.CUSTOM),)
+        asset_key = (model.Key(model.KeyElements.ASSET, "asset", model.KeyType.CUSTOM),)
         asset_reference = model.AASReference(asset_key, model.Asset)
         aas_identifier = model.Identifier("AAS1", model.IdentifierType.CUSTOM)
-        submodel_key = (model.Key(model.KeyElements.SUBMODEL, True, "SM1", model.KeyType.CUSTOM),)
+        submodel_key = (model.Key(model.KeyElements.SUBMODEL, "SM1", model.KeyType.CUSTOM),)
         submodel_identifier = submodel_key[0].get_identifier()
-        assert submodel_identifier is not None
+        assert(submodel_identifier is not None)
         submodel_reference = model.AASReference(submodel_key, model.Submodel)
         submodel = model.Submodel(submodel_identifier)
-        test_aas = model.AssetAdministrationShell(asset_reference, aas_identifier, submodel={submodel_reference})
+        test_aas = model.AssetAdministrationShell(model.AssetInformation(global_asset_id=asset_reference),
+                                                  aas_identifier, submodel_={submodel_reference})
 
         # serialize object to json
         json_data = json.dumps({
@@ -47,18 +52,18 @@ class JsonSerializationTest(unittest.TestCase):
 
 class JsonSerializationSchemaTest(unittest.TestCase):
     def test_random_object_serialization(self) -> None:
-        asset_key = (model.Key(model.KeyElements.ASSET, True, "asset", model.KeyType.CUSTOM),)
+        asset_key = (model.Key(model.KeyElements.ASSET, "asset", model.KeyType.CUSTOM),)
         asset_reference = model.AASReference(asset_key, model.Asset)
         aas_identifier = model.Identifier("AAS1", model.IdentifierType.CUSTOM)
-        submodel_key = (model.Key(model.KeyElements.SUBMODEL, True, "SM1", model.KeyType.CUSTOM),)
+        submodel_key = (model.Key(model.KeyElements.SUBMODEL, "SM1", model.KeyType.CUSTOM),)
         submodel_identifier = submodel_key[0].get_identifier()
-        assert submodel_identifier is not None
+        assert(submodel_identifier is not None)
         submodel_reference = model.AASReference(submodel_key, model.Submodel)
         # The JSONSchema expects every object with HasSemnatics (like Submodels) to have a `semanticId` Reference, which
         # must be a Reference. (This seems to be a bug in the JSONSchema.)
-        submodel = model.Submodel(submodel_identifier, semantic_id=model.Reference((model.Key(
-            model.KeyElements.GLOBAL_REFERENCE, False, "http://acplt.org/TestSemanticId", model.KeyType.IRI),)))
-        test_aas = model.AssetAdministrationShell(asset_reference, aas_identifier, submodel={submodel_reference})
+        submodel = model.Submodel(submodel_identifier, semantic_id=model.Reference((),))
+        test_aas = model.AssetAdministrationShell(model.AssetInformation(global_asset_id=asset_reference),
+                                                  aas_identifier, submodel_={submodel_reference})
 
         # serialize object to json
         json_data = json.dumps({
@@ -190,7 +195,7 @@ class JsonSerializationStrippedObjectsTest(unittest.TestCase):
     def test_stripped_annotated_relationship_element(self) -> None:
         mlp = model.MultiLanguageProperty("test_multi_language_property")
         ref = model.AASReference(
-            (model.Key(model.KeyElements.SUBMODEL, False, "http://acplt.org/test_ref", model.KeyType.IRI),),
+            (model.Key(model.KeyElements.SUBMODEL, "http://acplt.org/test_ref", model.KeyType.IRI),),
             model.Submodel
         )
         are = model.AnnotatedRelationshipElement(
@@ -216,17 +221,17 @@ class JsonSerializationStrippedObjectsTest(unittest.TestCase):
 
     def test_stripped_asset_administration_shell(self) -> None:
         asset_ref = model.AASReference(
-            (model.Key(model.KeyElements.ASSET, False, "http://acplt.org/test_ref", model.KeyType.IRI),),
+            (model.Key(model.KeyElements.ASSET, "http://acplt.org/test_ref", model.KeyType.IRI),),
             model.Asset
         )
         submodel_ref = model.AASReference(
-            (model.Key(model.KeyElements.SUBMODEL, False, "http://acplt.org/test_ref", model.KeyType.IRI),),
+            (model.Key(model.KeyElements.SUBMODEL, "http://acplt.org/test_ref", model.KeyType.IRI),),
             model.Submodel
         )
         aas = model.AssetAdministrationShell(
-            asset_ref,
+            model.AssetInformation(global_asset_id=asset_ref),
             model.Identifier("http://acplt.org/test_aas", model.IdentifierType.IRI),
-            submodel={submodel_ref},
+            submodel_={submodel_ref},
             view=[model.View("test_view")]
         )
 

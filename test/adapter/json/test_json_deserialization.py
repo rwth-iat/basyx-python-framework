@@ -163,14 +163,15 @@ class JsonDeserializationTest(unittest.TestCase):
                 "assetAdministrationShells": [{
                     "modelType": {"name": "AssetAdministrationShell"},
                     "identification": {"idType": "IRI", "id": "http://acplt.org/test_aas"},
-                    "asset": {
-                        "keys": [{
-                            "idType": "IRI",
-                            "local": false,
-                            "type": "Asset",
-                            "value": "http://acplt.org/test_aas"
-                        }]
-                    }
+                    "assetInformation": {
+                        "assetKind": "Instance",
+                        "globalAssetId": {
+                            "keys": [{
+                                "idType": "IRI",
+                                "type": "Asset",
+                                "value": "test_asset"
+                            }]
+                    }}
                 }],
                 "submodels": [{
                     "modelType": {"name": "Submodel"},
@@ -311,15 +312,13 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
                 "first": {
                     "keys": [{
                         "idType": "IdShort",
-                        "local": true,
                         "type": "AnnotatedRelationshipElement",
                         "value": "test_ref"
                     }]
                 },
                 "second": {
                     "keys": [{
-                        "idType": "IdShort",
-                        "local": true,
+                        "idType": "IdShort",                        
                         "type": "AnnotatedRelationshipElement",
                         "value": "test_ref"
                     }]
@@ -348,6 +347,13 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
                 "modelType": {"name": "Entity"},
                 "idShort": "test_entity",
                 "entityType": "CoManagedEntity",
+                "globalAssetId": {
+                    "keys": [{
+                        "idType": "IRI",
+                        "type": "Asset",
+                        "value": "test_asset"
+                    }]
+                },
                 "statements": [{
                     "modelType": {"name": "MultiLanguageProperty"},
                     "idShort": "test_multi_language_property"
@@ -395,18 +401,19 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
             {
                 "modelType": {"name": "AssetAdministrationShell"},
                 "identification": {"idType": "IRI", "id": "http://acplt.org/test_aas"},
-                "asset": {
-                    "keys": [{
-                        "idType": "IRI",
-                        "local": false,
-                        "type": "Asset",
-                        "value": "http://acplt.org/test_aas"
-                    }]
+                "assetInformation": {
+                        "assetKind": "Instance",
+                        "globalAssetId": {
+                            "keys": [{
+                                "idType": "IRI",
+                                "type": "Asset",
+                                "value": "test_asset"
+                            }]
+                        }
                 },
                 "submodels": [{
                     "keys": [{
                         "idType": "IRI",
-                        "local": false,
                         "type": "Submodel",
                         "value": "http://acplt.org/test_submodel"
                     }]
@@ -416,7 +423,7 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
                     "idShort": "test_view"
                 }]
             }"""
-
+        print(data)
         # check if JSON with submodels and views can be parsed successfully
         aas = json.loads(data, cls=StrictAASFromJsonDecoder)
         self.assertIsInstance(aas, model.AssetAdministrationShell)
