@@ -309,6 +309,7 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
             {
                 "modelType": {"name": "AnnotatedRelationshipElement"},
                 "idShort": "test_annotated_relationship_element",
+                "category": "PARAMETER",
                 "first": {
                     "keys": [{
                         "idType": "IdShort",
@@ -325,7 +326,8 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
                 },
                 "annotation": [{
                     "modelType": {"name": "MultiLanguageProperty"},
-                    "idShort": "test_multi_language_property"
+                    "idShort": "test_multi_language_property",
+                    "category": "CONSTANT"
                 }]
             }"""
 
