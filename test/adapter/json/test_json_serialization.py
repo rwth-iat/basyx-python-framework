@@ -1,13 +1,10 @@
-# Copyright 2020 PyI40AAS Contributors
+# Copyright (c) 2020 PyI40AAS Contributors
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
-# the License. You may obtain a copy of the License at
+# This program and the accompanying materials are made available under the terms of the Eclipse Public License v. 2.0
+# which is available at https://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0 which is available
+# at https://www.apache.org/licenses/LICENSE-2.0.
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations under the License.
+# SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 
 import io
 import unittest
@@ -38,7 +35,7 @@ class JsonSerializationTest(unittest.TestCase):
         submodel_reference = model.AASReference(submodel_key, model.Submodel)
         submodel = model.Submodel(submodel_identifier)
         test_aas = model.AssetAdministrationShell(model.AssetInformation(global_asset_id=asset_reference),
-                                                  aas_identifier, submodel_={submodel_reference})
+                                                  aas_identifier, submodel={submodel_reference})
 
         # serialize object to json
         json_data = json.dumps({
@@ -63,7 +60,7 @@ class JsonSerializationSchemaTest(unittest.TestCase):
         # must be a Reference. (This seems to be a bug in the JSONSchema.)
         submodel = model.Submodel(submodel_identifier, semantic_id=model.Reference((),))
         test_aas = model.AssetAdministrationShell(model.AssetInformation(global_asset_id=asset_reference),
-                                                  aas_identifier, submodel_={submodel_reference})
+                                                  aas_identifier, submodel={submodel_reference})
 
         # serialize object to json
         json_data = json.dumps({
@@ -231,8 +228,7 @@ class JsonSerializationStrippedObjectsTest(unittest.TestCase):
         aas = model.AssetAdministrationShell(
             model.AssetInformation(global_asset_id=asset_ref),
             model.Identifier("http://acplt.org/test_aas", model.IdentifierType.IRI),
-            submodel_={submodel_ref},
-            view=[model.View("test_view")]
+            submodel={submodel_ref}
         )
 
-        self._checkNormalAndStripped({"submodels", "views"}, aas)
+        self._checkNormalAndStripped({"submodels"}, aas)
