@@ -1,10 +1,9 @@
-# Copyright (c) 2020 PyI40AAS Contributors
+# Copyright (c) 2020 the Eclipse BaSyx Authors
 #
-# This program and the accompanying materials are made available under the terms of the Eclipse Public License v. 2.0
-# which is available at https://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0 which is available
-# at https://www.apache.org/licenses/LICENSE-2.0.
+# This program and the accompanying materials are made available under the terms of the MIT License, available in
+# the LICENSE file of this project.
 #
-# SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+# SPDX-License-Identifier: MIT
 """
 Additional tests for the adapter.json.json_deserialization module.
 
@@ -16,9 +15,9 @@ import io
 import json
 import logging
 import unittest
-from aas.adapter.json import AASFromJsonDecoder, StrictAASFromJsonDecoder, StrictStrippedAASFromJsonDecoder, \
+from basyx.aas.adapter.json import AASFromJsonDecoder, StrictAASFromJsonDecoder, StrictStrippedAASFromJsonDecoder, \
     read_aas_json_file, read_aas_json_file_into
-from aas import model
+from basyx.aas import model
 
 
 class JsonDeserializationTest(unittest.TestCase):
@@ -32,7 +31,7 @@ class JsonDeserializationTest(unittest.TestCase):
             read_aas_json_file(io.StringIO(data), failsafe=False)
         with self.assertLogs(logging.getLogger(), level=logging.WARNING) as cm:
             read_aas_json_file(io.StringIO(data), failsafe=True)
-        self.assertIn("submodels", cm.output[0])
+        self.assertIn("submodels", cm.output[0])  # type: ignore
 
     def test_file_format_wrong_list(self) -> None:
         data = """
@@ -45,7 +44,7 @@ class JsonDeserializationTest(unittest.TestCase):
                         "modelType": {
                             "name": "AssetAdministrationShell"
                         },
-                        "identification": {
+                        "id": {
                             "id": "https://acplt.org/Test_Asset",
                             "idType": "IRI"
                         },
@@ -59,8 +58,8 @@ class JsonDeserializationTest(unittest.TestCase):
             read_aas_json_file(io.StringIO(data), failsafe=False)
         with self.assertLogs(logging.getLogger(), level=logging.WARNING) as cm:
             read_aas_json_file(io.StringIO(data), failsafe=True)
-        self.assertIn("submodels", cm.output[0])
-        self.assertIn("AssetAdministrationShell", cm.output[0])
+        self.assertIn("submodels", cm.output[0])  # type: ignore
+        self.assertIn("AssetAdministrationShell", cm.output[0])  # type: ignore
 
     def test_file_format_unknown_object(self) -> None:
         data = """
@@ -76,8 +75,8 @@ class JsonDeserializationTest(unittest.TestCase):
             read_aas_json_file(io.StringIO(data), failsafe=False)
         with self.assertLogs(logging.getLogger(), level=logging.WARNING) as cm:
             read_aas_json_file(io.StringIO(data), failsafe=True)
-        self.assertIn("submodels", cm.output[0])
-        self.assertIn("'foo'", cm.output[0])
+        self.assertIn("submodels", cm.output[0])  # type: ignore
+        self.assertIn("'foo'", cm.output[0])  # type: ignore
 
     def test_broken_submodel(self) -> None:
         data = """
@@ -87,42 +86,42 @@ class JsonDeserializationTest(unittest.TestCase):
                 },
                 {
                     "modelType": {"name": "Submodel"},
-                    "identification": ["https://acplt.org/Test_Submodel_broken_id", "IRI"]
+                    "id": ["https://acplt.org/Test_Submodel_broken_id", "IRI"]
                 },
                 {
                     "modelType": {"name": "Submodel"},
-                    "identification": {"id": "https://acplt.org/Test_Submodel", "idType": "IRI"}
+                    "id": {"id": "https://acplt.org/Test_Submodel", "idType": "IRI"}
                 }
             ]"""
         # In strict mode, we should catch an exception
-        with self.assertRaisesRegex(KeyError, r"identification"):
+        with self.assertRaisesRegex(KeyError, r"id"):
             json.loads(data, cls=StrictAASFromJsonDecoder)
 
         # In failsafe mode, we should get a log entry and the first Submodel entry should be returned as untouched dict
         with self.assertLogs(logging.getLogger(), level=logging.WARNING) as cm:
             parsed_data = json.loads(data, cls=AASFromJsonDecoder)
-        self.assertIn("identification", cm.output[0])
+        self.assertIn("id", cm.output[0])  # type: ignore
         self.assertIsInstance(parsed_data, list)
         self.assertEqual(3, len(parsed_data))
 
         self.assertIsInstance(parsed_data[0], dict)
         self.assertIsInstance(parsed_data[1], dict)
         self.assertIsInstance(parsed_data[2], model.Submodel)
-        self.assertEqual("https://acplt.org/Test_Submodel", parsed_data[2].identification.id)
+        self.assertEqual("https://acplt.org/Test_Submodel", parsed_data[2].id.id)
 
     def test_wrong_submodel_element_type(self) -> None:
         data = """
             [
                 {
                     "modelType": {"name": "Submodel"},
-                    "identification": {
+                    "id": {
                         "id": "http://acplt.org/Submodels/Assets/TestAsset/Identification",
                         "idType": "IRI"
                     },
                     "submodelElements": [
                         {
                             "modelType": {"name": "Submodel"},
-                            "identification": {"id": "https://acplt.org/Test_Submodel", "idType": "IRI"}
+                            "id": {"id": "https://acplt.org/Test_Submodel", "idType": "IRI"}
                         },
                         {
                             "modelType": "Broken modelType"
@@ -139,15 +138,15 @@ class JsonDeserializationTest(unittest.TestCase):
         with self.assertLogs(logging.getLogger(), level=logging.WARNING) as cm:
             with self.assertRaisesRegex(TypeError, r"SubmodelElement.*Submodel"):
                 json.loads(data, cls=StrictAASFromJsonDecoder)
-        self.assertIn("modelType", cm.output[0])
+        self.assertIn("modelType", cm.output[0])  # type: ignore
 
         # In failsafe mode, we should get a log entries for the broken object and the wrong type of the first two
         #   submodelElements
         with self.assertLogs(logging.getLogger(), level=logging.WARNING) as cm:
             parsed_data = json.loads(data, cls=AASFromJsonDecoder)
-        self.assertGreaterEqual(len(cm.output), 3)
-        self.assertIn("SubmodelElement", cm.output[1])
-        self.assertIn("SubmodelElement", cm.output[2])
+        self.assertGreaterEqual(len(cm.output), 3)  # type: ignore
+        self.assertIn("SubmodelElement", cm.output[1])  # type: ignore
+        self.assertIn("SubmodelElement", cm.output[2])  # type: ignore
 
         self.assertIsInstance(parsed_data[0], model.Submodel)
         self.assertEqual(1, len(parsed_data[0].submodel_element))
@@ -160,21 +159,21 @@ class JsonDeserializationTest(unittest.TestCase):
             {
                 "assetAdministrationShells": [{
                     "modelType": {"name": "AssetAdministrationShell"},
-                    "identification": {"idType": "IRI", "id": "http://acplt.org/test_aas"},
+                    "id": {"idType": "IRI", "id": "http://acplt.org/test_aas"},
                     "assetInformation": {
                         "assetKind": "Instance"
                     }
                 }],
                 "submodels": [{
                     "modelType": {"name": "Submodel"},
-                    "identification": {"idType": "IRI", "id": "http://acplt.org/test_aas"}
+                    "id": {"idType": "IRI", "id": "http://acplt.org/test_aas"}
                 }],
                 "conceptDescriptions": []
             }"""
         string_io = io.StringIO(data)
         with self.assertLogs(logging.getLogger(), level=logging.ERROR) as cm:
             read_aas_json_file(string_io, failsafe=True)
-        self.assertIn("duplicate identifier", cm.output[0])
+        self.assertIn("duplicate identifier", cm.output[0])  # type: ignore
         string_io.seek(0)
         with self.assertRaisesRegex(KeyError, r"duplicate identifier"):
             read_aas_json_file(string_io, failsafe=False)
@@ -192,7 +191,7 @@ class JsonDeserializationTest(unittest.TestCase):
             {
                 "submodels": [{
                     "modelType": {"name": "Submodel"},
-                    "identification": {"idType": "IRI", "id": "http://acplt.org/test_submodel"},
+                    "id": {"idType": "IRI", "id": "http://acplt.org/test_submodel"},
                     "idShort": "test456"
                 }],
                 "assetAdministrationShells": [],
@@ -214,7 +213,7 @@ class JsonDeserializationTest(unittest.TestCase):
         with self.assertLogs(logging.getLogger(), level=logging.INFO) as log_ctx:
             identifiers = read_aas_json_file_into(object_store, string_io, replace_existing=False, ignore_existing=True)
         self.assertEqual(len(identifiers), 0)
-        self.assertIn("already exists in the object store", log_ctx.output[0])
+        self.assertIn("already exists in the object store", log_ctx.output[0])  # type: ignore
         submodel = object_store.pop()
         self.assertIsInstance(submodel, model.Submodel)
         self.assertEqual(submodel.id_short, "test123")
@@ -247,7 +246,7 @@ class JsonDeserializationDerivingTest(unittest.TestCase):
             [
                 {
                     "modelType": {"name": "Submodel"},
-                    "identification": {"id": "https://acplt.org/Test_Submodel", "idType": "IRI"}
+                    "id": {"id": "https://acplt.org/Test_Submodel", "idType": "IRI"}
                 }
             ]"""
         parsed_data = json.loads(data, cls=EnhancedAASDecoder)
@@ -261,7 +260,7 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
         data = """
             {
                 "modelType": {"name": "Submodel"},
-                "identification": {"idType": "IRI", "id": "http://acplt.org/test_stripped_submodel"},
+                "id": {"idType": "IRI", "id": "http://acplt.org/test_stripped_submodel"},
                 "submodelElements": [{
                     "modelType": {"name": "Operation"},
                     "idShort": "test_operation",
@@ -392,7 +391,7 @@ class JsonDeserializationStrippedObjectsTest(unittest.TestCase):
         data = """
             {
                 "modelType": {"name": "AssetAdministrationShell"},
-                "identification": {"idType": "IRI", "id": "http://acplt.org/test_aas"},
+                "id": {"idType": "IRI", "id": "http://acplt.org/test_aas"},
                 "assetInformation": {
                     "assetKind": "Instance",
                     "globalAssetId": {
