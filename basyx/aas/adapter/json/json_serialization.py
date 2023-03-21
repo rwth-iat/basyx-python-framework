@@ -124,7 +124,7 @@ class AASToJsonEncoder(json.JSONEncoder):
             except StopIteration as e:
                 raise TypeError("Object of type {} is Referable but does not inherit from a known AAS type"
                                 .format(obj.__class__.__name__)) from e
-            data['modelType'] = {'name': ref_type.__name__}
+            data['modelType'] = ref_type.__name__
         if isinstance(obj, model.Identifiable):
             data['id'] = obj.id
             if obj.administration:
@@ -212,7 +212,7 @@ class AASToJsonEncoder(json.JSONEncoder):
         :return: dict with the serialized attributes of this object
         """
         data = cls._abstract_classes_to_json(obj)
-        data['modelType'] = {'name': model.Qualifier.__name__}
+        data['modelType'] = model.Qualifier.__name__
         if obj.value:
             data['value'] = model.datatypes.xsd_repr(obj.value) if obj.value is not None else None
         if obj.value_id:
