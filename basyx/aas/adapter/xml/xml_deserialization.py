@@ -493,8 +493,7 @@ class AASFromXmlDecoder:
         relationship_element = object_class(
             _child_text_mandatory(element, NS_AAS + "idShort"),
             _child_construct_mandatory(element, NS_AAS + "first", cls.construct_reference),
-            _child_construct_mandatory(element, NS_AAS + "second", cls.construct_reference),
-            kind=_get_modeling_kind(element)
+            _child_construct_mandatory(element, NS_AAS + "second", cls.construct_reference)
         )
         cls._amend_abstract_attributes(relationship_element, element)
         return relationship_element
@@ -726,8 +725,7 @@ class AASFromXmlDecoder:
             _child_text_mandatory(element, NS_AAS + "idShort"),
             _child_construct_mandatory(element, NS_AAS + "observed", cls._construct_referable_reference),
             _child_text_mandatory_mapped(element, NS_AAS + "direction", DIRECTION_INVERSE),
-            _child_text_mandatory_mapped(element, NS_AAS + "state", STATE_OF_EVENT_INVERSE),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory_mapped(element, NS_AAS + "state", STATE_OF_EVENT_INVERSE)
         )
         message_topic = _get_text_or_none(element.find(NS_AAS + "messageTopic"))
         if message_topic is not None:
@@ -752,8 +750,7 @@ class AASFromXmlDecoder:
     def construct_blob(cls, element: etree.Element, object_class=model.Blob, **_kwargs: Any) -> model.Blob:
         blob = object_class(
             _child_text_mandatory(element, NS_AAS + "idShort"),
-            _child_text_mandatory(element, NS_AAS + "contentType"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "contentType")
         )
         value = _get_text_or_none(element.find(NS_AAS + "value"))
         if value is not None:
@@ -765,8 +762,7 @@ class AASFromXmlDecoder:
     def construct_capability(cls, element: etree.Element, object_class=model.Capability, **_kwargs: Any) \
             -> model.Capability:
         capability = object_class(
-            _child_text_mandatory(element, NS_AAS + "idShort"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "idShort")
         )
         cls._amend_abstract_attributes(capability, element)
         return capability
@@ -796,8 +792,7 @@ class AASFromXmlDecoder:
     def construct_file(cls, element: etree.Element, object_class=model.File, **_kwargs: Any) -> model.File:
         file = object_class(
             _child_text_mandatory(element, NS_AAS + "idShort"),
-            _child_text_mandatory(element, NS_AAS + "contentType"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "contentType")
         )
         value = _get_text_or_none(element.find(NS_AAS + "value"))
         if value is not None:
@@ -820,8 +815,7 @@ class AASFromXmlDecoder:
     def construct_multi_language_property(cls, element: etree.Element, object_class=model.MultiLanguageProperty,
                                           **_kwargs: Any) -> model.MultiLanguageProperty:
         multi_language_property = object_class(
-            _child_text_mandatory(element, NS_AAS + "idShort"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "idShort")
         )
         value = _failsafe_construct(element.find(NS_AAS + "value"), cls.construct_lang_string_set, cls.failsafe)
         if value is not None:
@@ -836,8 +830,7 @@ class AASFromXmlDecoder:
     def construct_operation(cls, element: etree.Element, object_class=model.Operation, **_kwargs: Any) \
             -> model.Operation:
         operation = object_class(
-            _child_text_mandatory(element, NS_AAS + "idShort"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "idShort")
         )
         input_variables = element.find(NS_AAS + "inputVariables")
         if input_variables is not None:
@@ -861,8 +854,7 @@ class AASFromXmlDecoder:
     def construct_property(cls, element: etree.Element, object_class=model.Property, **_kwargs: Any) -> model.Property:
         property_ = object_class(
             _child_text_mandatory(element, NS_AAS + "idShort"),
-            value_type=_child_text_mandatory_mapped(element, NS_AAS + "valueType", model.datatypes.XSD_TYPE_CLASSES),
-            kind=_get_modeling_kind(element)
+            value_type=_child_text_mandatory_mapped(element, NS_AAS + "valueType", model.datatypes.XSD_TYPE_CLASSES)
         )
         value = _get_text_or_none(element.find(NS_AAS + "value"))
         if value is not None:
@@ -877,8 +869,7 @@ class AASFromXmlDecoder:
     def construct_range(cls, element: etree.Element, object_class=model.Range, **_kwargs: Any) -> model.Range:
         range_ = object_class(
             _child_text_mandatory(element, NS_AAS + "idShort"),
-            value_type=_child_text_mandatory_mapped(element, NS_AAS + "valueType", model.datatypes.XSD_TYPE_CLASSES),
-            kind=_get_modeling_kind(element)
+            value_type=_child_text_mandatory_mapped(element, NS_AAS + "valueType", model.datatypes.XSD_TYPE_CLASSES)
         )
         max_ = _get_text_or_none(element.find(NS_AAS + "max"))
         if max_ is not None:
@@ -893,8 +884,7 @@ class AASFromXmlDecoder:
     def construct_reference_element(cls, element: etree.Element, object_class=model.ReferenceElement, **_kwargs: Any) \
             -> model.ReferenceElement:
         reference_element = object_class(
-            _child_text_mandatory(element, NS_AAS + "idShort"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "idShort")
         )
         value = _failsafe_construct(element.find(NS_AAS + "value"), cls.construct_reference, cls.failsafe)
         if value is not None:
@@ -911,8 +901,7 @@ class AASFromXmlDecoder:
     def construct_submodel_element_collection(cls, element: etree.Element, object_class=model.SubmodelElementCollection,
                                               **_kwargs: Any) -> model.SubmodelElementCollection:
         collection = object_class(
-            _child_text_mandatory(element, NS_AAS + "idShort"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "idShort")
         )
         if not cls.stripped:
             value = element.find(NS_AAS + "value")
@@ -940,8 +929,7 @@ class AASFromXmlDecoder:
             value_type_list_element=_get_text_mapped_or_none(element.find(NS_AAS + "valueTypeListElement"),
                                                              model.datatypes.XSD_TYPE_CLASSES),
             order_relevant=_str_to_bool(_get_text_mandatory(order_relevant))
-            if order_relevant is not None else True,
-            kind=_get_modeling_kind(element)
+            if order_relevant is not None else True
         )
         if not cls.stripped:
             value = element.find(NS_AAS + "value")
@@ -1010,8 +998,7 @@ class AASFromXmlDecoder:
     def construct_submodel(cls, element: etree.Element, object_class=model.Submodel, **_kwargs: Any) \
             -> model.Submodel:
         submodel = object_class(
-            _child_text_mandatory(element, NS_AAS + "id"),
-            kind=_get_modeling_kind(element)
+            _child_text_mandatory(element, NS_AAS + "id")
         )
         if not cls.stripped:
             submodel_elements = element.find(NS_AAS + "submodelElements")
