@@ -1,10 +1,9 @@
 # Copyright (c) 2020 the Eclipse BaSyx Authors
 #
-# This program and the accompanying materials are made available under the terms of the Eclipse Public License v. 2.0
-# which is available at https://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0 which is available
-# at https://www.apache.org/licenses/LICENSE-2.0.
+# This program and the accompanying materials are made available under the terms of the MIT License, available in
+# the LICENSE file of this project.
 #
-# SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+# SPDX-License-Identifier: MIT
 """
 .. _adapter.json.json_deserialization:
 
@@ -37,8 +36,8 @@ import pprint
 from typing import Dict, Callable, TypeVar, Type, List, IO, Optional, Set
 
 from basyx.aas import model
-from .._generic import MODELING_KIND_INVERSE, ASSET_KIND_INVERSE, KEY_TYPES_INVERSE, ENTITY_TYPES_INVERSE,\
-    IEC61360_DATA_TYPES_INVERSE, IEC61360_LEVEL_TYPES_INVERSE, KEY_TYPES_CLASSES_INVERSE, REFERENCE_TYPES_INVERSE,\
+from .._generic import MODELLING_KIND_INVERSE, ASSET_KIND_INVERSE, KEY_TYPES_INVERSE, ENTITY_TYPES_INVERSE, \
+    IEC61360_DATA_TYPES_INVERSE, IEC61360_LEVEL_TYPES_INVERSE, KEY_TYPES_CLASSES_INVERSE, REFERENCE_TYPES_INVERSE, \
     DIRECTION_INVERSE, STATE_OF_EVENT_INVERSE, QUALIFIER_KIND_INVERSE
 
 logger = logging.getLogger(__name__)
@@ -276,14 +275,14 @@ class AASFromJsonDecoder(json.JSONDecoder):
                     obj.extension.add(cls._construct_extension(extension))
 
     @classmethod
-    def _get_kind(cls, dct: Dict[str, object]) -> model.ModelingKind:
+    def _get_kind(cls, dct: Dict[str, object]) -> model.ModellingKind:
         """
         Utility method to get the kind of an HasKind object from its JSON representation.
 
         :param dct: The object's dict representation from JSON
         :return: The object's `kind` value
         """
-        return MODELING_KIND_INVERSE[_get_ts(dct, "kind", str)] if 'kind' in dct else model.ModelingKind.INSTANCE
+        return MODELLING_KIND_INVERSE[_get_ts(dct, "kind", str)] if 'kind' in dct else model.ModellingKind.INSTANCE
 
     # #############################################################################
     # Helper Constructor Methods starting from here
