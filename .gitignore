@@ -13,6 +13,7 @@ sdk/basyx_python_framework.egg-info/
 
 # Python distribution artifacts
 /build/
+/sdk/build
 /dist/
 /*.egg-info/
 /docs/build/
