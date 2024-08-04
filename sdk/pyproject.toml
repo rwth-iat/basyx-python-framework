@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "basyx-python-framework"
+version = "0.1"
+dependencies = ["aas-core3.0"]
+requires-python = ">=3.8"
+authors = [
+  {name = "The Eclipse BaSyx Authors"}
+]
+
+description="The Eclipse BaSyx Python SDK, an implementation of the Asset Administration Shell for Industry 4.0 systems"
+readme = "README.md"
+license = {file = "LICENSE.txt"} # TODO: Which license do we use?
+
+
+
+
