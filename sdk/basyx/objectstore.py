@@ -13,7 +13,10 @@ This module implements Registries for the AAS, in order to enable resolving glob
 import abc
 from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional, Iterable
 
-from .base import Identifier, Identifiable
+from aas_core3.types import Identifiable, Referable
+
+Identifier = str
+Id_short = str
 
 
 class AbstractObjectProvider(metaclass=abc.ABCMeta):
@@ -24,6 +27,7 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
 
     This includes local object stores, database clients and AAS API clients.
     """
+
     @abc.abstractmethod
     def get_identifiable(self, identifier: Identifier) -> Identifiable:
         """
@@ -71,6 +75,7 @@ class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IT], Generic[_IT],
     The AbstractObjectStore inherits from the :class:`~collections.abc.MutableSet` abstract collections class and
     therefore implements all the functions of this class.
     """
+
     @abc.abstractmethod
     def __init__(self):
         pass
@@ -80,11 +85,15 @@ class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IT], Generic[_IT],
             self.add(x)
 
 
-class DictObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
+_RT = TypeVar('_RT', bound=Referable)
+
+
+class ObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
     """
     A local in-memory object store for :class:`~basyx.aas.model.base.Identifiable` objects, backed by a dict, mapping
     :class:`~basyx.aas.model.base.Identifier` → :class:`~basyx.aas.model.base.Identifiable`
     """
+
     def __init__(self, objects: Iterable[_IT] = ()) -> None:
         self._backend: Dict[Identifier, _IT] = {}
         for x in objects:
@@ -102,6 +111,23 @@ class DictObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
     def discard(self, x: _IT) -> None:
         if self._backend.get(x.id) is x:
             del self._backend[x.id]
+
+    def get_referable(self, identifier: Identifier, id_short: Id_short) -> _RT:
+        something: Referable
+        identifiable = self.get_identifiable(identifier)
+        for something in identifiable.descend():
+
+            if (
+                    issubclass(type(something), Referable)
+                    and id_short in something.id_short
+            ):
+                return something
+
+    def get_children_objects(self):
+        pass
+
+    def get_parent_objects(self):
+        pass
 
     def __contains__(self, x: object) -> bool:
         if isinstance(x, Identifier):
@@ -128,6 +154,7 @@ class ObjectProviderMultiplexer(AbstractObjectProvider):
     :ivar registries: A list of :class:`AbstractObjectProviders <.AbstractObjectProvider>` to query when looking up an
                       object
     """
+
     def __init__(self, registries: Optional[List[AbstractObjectProvider]] = None):
         self.providers: List[AbstractObjectProvider] = registries if registries is not None else []
 
