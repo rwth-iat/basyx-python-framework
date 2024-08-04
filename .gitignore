@@ -1,0 +1,23 @@
+# Python caching
+**/__pycache__/
+*.pyc
+/.mypy_cache/
+
+# Typical virtualenv dir
+/venv/
+/sdk/venv
+sdk/basyx_python_framework.egg-info/
+
+# IDE settings
+/.idea/
+
+# Python distribution artifacts
+/build/
+/dist/
+/*.egg-info/
+/docs/build/
+
+# Coverage artifacts
+/.coverage
+/htmlcov/
+/docs/build/
