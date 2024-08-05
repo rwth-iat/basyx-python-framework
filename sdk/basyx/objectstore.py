@@ -13,7 +13,7 @@ This module implements Registries for the AAS, in order to enable resolving glob
 import abc
 from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional, Iterable
 
-from aas_core3.types import Identifiable, Referable
+from aas_core3.types import Identifiable, Referable, Class
 
 Identifier = str
 Id_short = str
@@ -113,20 +113,30 @@ class ObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
             del self._backend[x.id]
 
     def get_referable(self, identifier: Identifier, id_short: Id_short) -> _RT:
-        something: Referable
+        referable: Referable
         identifiable = self.get_identifiable(identifier)
-        for something in identifiable.descend():
+        for referable in identifiable.descend():
 
             if (
-                    issubclass(type(something), Referable)
-                    and id_short in something.id_short
+                    issubclass(type(referable), Referable)
+                    and id_short in referable.id_short
             ):
-                return something
+                return referable
 
-    def get_children_objects(self):
-        pass
+    def get_children_referable(self, id_short: Id_short) -> [Referable]:
+        referable: Referable
+        for identifiable in self._backend.values():
+            if identifiable.id_short == id_short:
+                return identifiable.descend()
+            for referable in identifiable.descend():
+                if (
+                        issubclass(type(referable), Referable)
+                        and id_short in referable.id_short
+                ):
+                    return list(referable.descend())
+        raise KeyError("there is no referable with id_short {}".format(id_short))
 
-    def get_parent_objects(self):
+    def get_parent_referable(self, id_short: Id_short) -> [Referable]:
         pass
 
     def __contains__(self, x: object) -> bool:
