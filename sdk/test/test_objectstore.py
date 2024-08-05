@@ -33,11 +33,28 @@ class ProvidersTest(unittest.TestCase):
             value=b'\xDE\xAD\xBE\xEF'
         )
 
+        self.list_element = aas_types.Blob(
+            id_short="list_1",
+            content_type="application/octet-stream",
+            value=b'\xDE\xAD\xBE\xEF'
+        )
+
+        self.another_list_element = aas_types.Blob(
+            id_short="list_2",
+            content_type="application/octet-stream",
+            value=b'\xDE\xAD\xBE\xEF'
+        )
+
+        element_list = aas_types.SubmodelElementList(id_short='ExampleSubmodelList',
+                                                     type_value_list_element=aas_types.AASSubmodelElements.SUBMODEL_ELEMENT_LIST,
+                                                     value=[self.list_element, self.another_list_element])
+
         self.submodel1 = aas_types.Submodel(
             id="urn:x-test:submodel1",
             submodel_elements=[
                 some_element,
-                another_element
+                another_element,
+                element_list
             ]
         )
         self.submodel2 = aas_types.Submodel(
@@ -98,8 +115,16 @@ class ProvidersTest(unittest.TestCase):
             multiplexer.get_identifiable("urn:x-test:submodel3")
         self.assertEqual("'Identifier could not be found in any of the 2 consulted registries.'", str(cm.exception))
 
-    def test_get_referable(self) -> None:
-        pass
+    def test_get_children_referable(self) -> None:
+        object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store.add(self.submodel1)
+        children = object_store.get_children_referable('ExampleSubmodelList')
+        assert self.list_element in children
+        assert self.another_list_element in children
 
-    def test_get_children_parents_referable(self) -> None:
-        pass
+    def test_get_parent_identifiable(self) -> None:
+        object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store.add(self.submodel1)
+        object_store.add(self.submodel2)
+        parent_identifiable = object_store.get_parent_identifiable("list_1")
+        assert parent_identifiable == self.submodel1
