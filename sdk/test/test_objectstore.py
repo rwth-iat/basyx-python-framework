@@ -14,18 +14,19 @@ import aas_core3.types as aas_types
 
 class ProvidersTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.aas1 = AssetAdministrationShell(id="urn:x-test:aas1", asset_information=None)
-        self.aas2 = AssetAdministrationShell(id="urn:x-test:aas2",
-                                             asset_information=AssetInformation(asset_kind=AssetKind))
 
-        # Create the first element
+        self.aas1 = AssetAdministrationShell(id="urn:x-test:aas1",
+                                             asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
+
+        self.aas2 = AssetAdministrationShell(id="urn:x-test:aas2",
+                                             asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
+
         some_element = aas_types.Property(
             id_short="some_property",
             value_type=aas_types.DataTypeDefXSD.INT,
             value="1984"
         )
 
-        # Create the second element
         another_element = aas_types.Blob(
             id_short="some_blob",
             content_type="application/octet-stream",
@@ -54,7 +55,7 @@ class ProvidersTest(unittest.TestCase):
         property = aas_types.Property('test')
         self.assertFalse(property in object_store)
         aas3 = AssetAdministrationShell(id="urn:x-test:aas1", asset_information=AssetInformation(
-            global_asset_id="http://acplt.org/TestAsset/", asset_kind=AssetKind))
+            global_asset_id="http://acplt.org/TestAsset/", asset_kind=AssetKind.NOT_APPLICABLE))
         with self.assertRaises(KeyError) as cm:
             object_store.add(aas3)
         self.assertEqual("'Identifiable object with same id urn:x-test:aas1 is already "
