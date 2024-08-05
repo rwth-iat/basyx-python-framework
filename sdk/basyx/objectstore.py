@@ -136,8 +136,17 @@ class ObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
                     return list(referable.descend())
         raise KeyError("there is no referable with id_short {}".format(id_short))
 
-    def get_parent_referable(self, id_short: Id_short) -> [Referable]:
-        pass
+    def get_parent_identifiable(self, id_short: Id_short) -> Identifiable:
+        referable: Referable
+        for identifiable in self._backend.values():
+            for referable in identifiable.descend():
+                if (
+                        issubclass(type(referable), Referable)
+                        and id_short in referable.id_short
+                ):
+                    return identifiable
+        raise KeyError("there is no parent Identifiable for id_short {}".format(id_short))
+
 
     def __contains__(self, x: object) -> bool:
         if isinstance(x, Identifier):
