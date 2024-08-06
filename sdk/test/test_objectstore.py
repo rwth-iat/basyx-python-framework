@@ -45,7 +45,7 @@ class ProvidersTest(unittest.TestCase):
             value=b'\xDE\xAD\xBE\xEF'
         )
 
-        element_list = aas_types.SubmodelElementList(id_short='ExampleSubmodelList',
+        self.element_list = aas_types.SubmodelElementList(id_short='ExampleSubmodelList',
                                                      type_value_list_element=aas_types.AASSubmodelElements.SUBMODEL_ELEMENT_LIST,
                                                      value=[self.list_element, self.another_list_element])
 
@@ -54,7 +54,7 @@ class ProvidersTest(unittest.TestCase):
             submodel_elements=[
                 some_element,
                 another_element,
-                element_list
+                self.element_list
             ]
         )
         self.submodel2 = aas_types.Submodel(
@@ -126,5 +126,5 @@ class ProvidersTest(unittest.TestCase):
         object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
         object_store.add(self.submodel1)
         object_store.add(self.submodel2)
-        parent_identifiable = object_store.get_parent_identifiable("list_1")
-        assert parent_identifiable == self.submodel1
+        parent_referable = object_store.get_parent_referable("list_1")
+        assert parent_referable == self.element_list
