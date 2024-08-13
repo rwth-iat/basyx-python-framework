@@ -17,6 +17,8 @@ from aas_core3.types import Identifiable, Referable, Class
 
 Identifier = str
 Id_short = str
+_IdentifiableType = TypeVar('_IdentifiableType', bound=Identifiable)
+_ReferableType = TypeVar('_ReferableType', bound=Referable)
 
 
 class AbstractObjectProvider(metaclass=abc.ABCMeta):
@@ -60,10 +62,7 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
             return default
 
 
-_IT = TypeVar('_IT', bound=Identifiable)
-
-
-class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IT], Generic[_IT], metaclass=abc.ABCMeta):
+class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IdentifiableType], Generic[_IdentifiableType], metaclass=abc.ABCMeta):
     """
     Abstract baseclass of for container-like objects for storage of :class:`~basyx.aas.model.base.Identifiable` objects.
 
@@ -80,39 +79,36 @@ class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IT], Generic[_IT],
     def __init__(self):
         pass
 
-    def update(self, other: Iterable[_IT]) -> None:
+    def update(self, other: Iterable[_IdentifiableType]) -> None:
         for x in other:
             self.add(x)
 
 
-_RT = TypeVar('_RT', bound=Referable)
-
-
-class ObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
+class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableType]):
     """
     A local in-memory object store for :class:`~basyx.aas.model.base.Identifiable` objects, backed by a dict, mapping
     :class:`~basyx.aas.model.base.Identifier` → :class:`~basyx.aas.model.base.Identifiable`
     """
 
-    def __init__(self, objects: Iterable[_IT] = ()) -> None:
-        self._backend: Dict[Identifier, _IT] = {}
+    def __init__(self, objects: Iterable[_IdentifiableType] = ()) -> None:
+        self._backend: Dict[Identifier, _IdentifiableType] = {}
         for x in objects:
             self.add(x)
 
-    def get_identifiable(self, identifier: Identifier) -> _IT:
+    def get_identifiable(self, identifier: Identifier) -> _IdentifiableType:
         return self._backend[identifier]
 
-    def add(self, x: _IT) -> None:
+    def add(self, x: _IdentifiableType) -> None:
         if x.id in self._backend and self._backend.get(x.id) is not x:
             raise KeyError("Identifiable object with same id {} is already stored in this store"
                            .format(x.id))
         self._backend[x.id] = x
 
-    def discard(self, x: _IT) -> None:
+    def discard(self, x: _IdentifiableType) -> None:
         if self._backend.get(x.id) is x:
             del self._backend[x.id]
 
-    def get_referable(self, identifier: Identifier, id_short: Id_short) -> _RT:
+    def get_referable(self, identifier: Identifier, id_short: Id_short) -> _ReferableType:
         referable: Referable
         identifiable = self.get_identifiable(identifier)
         for referable in identifiable.descend():
@@ -149,7 +145,6 @@ class ObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
                     return referable
         raise KeyError("there is no parent Identifiable for id_short {}".format(id_short))
 
-
     def __contains__(self, x: object) -> bool:
         if isinstance(x, Identifier):
             return x in self._backend
@@ -160,7 +155,7 @@ class ObjectStore(AbstractObjectStore[_IT], Generic[_IT]):
     def __len__(self) -> int:
         return len(self._backend)
 
-    def __iter__(self) -> Iterator[_IT]:
+    def __iter__(self) -> Iterator[_IdentifiableType]:
         return iter(self._backend.values())
 
 
