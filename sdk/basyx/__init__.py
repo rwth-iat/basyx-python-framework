@@ -1,1 +1,1 @@
-from .objectstore import *
+from .object_store import *
