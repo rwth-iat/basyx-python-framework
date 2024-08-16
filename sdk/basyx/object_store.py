@@ -14,8 +14,6 @@ from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional,
 
 from aas_core3.types import Identifiable, Referable, Class
 
-Identifier = str
-Id_short = str
 _IdentifiableType = TypeVar('_IdentifiableType', bound=Identifiable)
 _ReferableType = TypeVar('_ReferableType', bound=Referable)
 
@@ -29,7 +27,7 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def get_identifiable(self, identifier: Identifier) -> Identifiable:
+    def get_identifiable(self, identifier: str) -> Identifiable:
         """
         Find an `Identifiable` by its `Identifier`
 
@@ -42,7 +40,7 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
         """
         pass
 
-    def get(self, identifier: Identifier, default: Optional[Identifiable] = None) -> Optional[Identifiable]:
+    def get(self, identifier: str, default: Optional[Identifiable] = None) -> Optional[Identifiable]:
         """
         Find an object in this set by its `Identifier`, with fallback parameter
 
@@ -85,11 +83,11 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
     """
 
     def __init__(self, objects: Iterable[_IdentifiableType] = ()) -> None:
-        self._backend: Dict[Identifier, _IdentifiableType] = {}
+        self._backend: Dict[str, _IdentifiableType] = {}
         for x in objects:
             self.add(x)
 
-    def get_identifiable(self, identifier: Identifier) -> _IdentifiableType:
+    def get_identifiable(self, identifier: str) -> _IdentifiableType:
         return self._backend[identifier]
 
     def add(self, x: _IdentifiableType) -> None:
@@ -102,7 +100,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         if self._backend.get(x.id) is x:
             del self._backend[x.id]
 
-    def get_referable(self, identifier: Identifier, id_short: Id_short) -> _ReferableType:
+    def get_referable(self, identifier: str, id_short: str) -> _ReferableType:
         referable: Referable
         identifiable = self.get_identifiable(identifier)
         for referable in identifiable.descend():
@@ -113,7 +111,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
             ):
                 return referable
 
-    def get_children_referable(self, id_short: Id_short) -> [Referable]:
+    def get_children_referable(self, id_short: str) -> [Referable]:
         referable: Referable
         for identifiable in self._backend.values():
             if identifiable.id_short == id_short:
@@ -126,7 +124,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
                     return list(referable.descend())
         raise KeyError("there is no referable with id_short {}".format(id_short))
 
-    def get_parent_referable(self, id_short: Id_short) -> Referable:
+    def get_parent_referable(self, id_short: str) -> Referable:
         referable: Referable
         referable_descended: Referable
         for identifiable in self._backend.values():
@@ -140,7 +138,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         raise KeyError("there is no parent Identifiable for id_short {}".format(id_short))
 
     def __contains__(self, x: object) -> bool:
-        if isinstance(x, Identifier):
+        if isinstance(x, str):
             return x in self._backend
         if not isinstance(x, Identifiable):
             return False
@@ -168,7 +166,7 @@ class ObjectProviderMultiplexer(AbstractObjectProvider):
     def __init__(self, registries: Optional[List[AbstractObjectProvider]] = None):
         self.providers: List[AbstractObjectProvider] = registries if registries is not None else []
 
-    def get_identifiable(self, identifier: Identifier) -> Identifiable:
+    def get_identifiable(self, identifier: str) -> Identifiable:
         for provider in self.providers:
             try:
                 return provider.get_identifiable(identifier)
