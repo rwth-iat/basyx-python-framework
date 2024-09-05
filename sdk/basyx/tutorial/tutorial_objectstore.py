@@ -78,4 +78,3 @@ print(another_list_element in obj_store.get_children_referable('urn:x-test:submo
 # Retrieve parent of list_element by id_short
 
 print(element_list == obj_store.get_parent_referable("list_1"))
-
