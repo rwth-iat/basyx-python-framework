@@ -6,8 +6,8 @@
 # SPDX-License-Identifier: MIT
 
 from sdk.basyx.object_store import ObjectStore
-from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind  # type: ignore
-import aas_core3.types as aas_types  # type: ignore
+from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
+import aas_core3.types as aas_types
 
 aas = AssetAdministrationShell(id="urn:x-test:aas1",
                                asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
