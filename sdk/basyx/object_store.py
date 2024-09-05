@@ -137,18 +137,13 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
                 referable_list.append(element)
         return referable_list
 
-    @typing.no_type_check  # TODO fix typing
     def get_parent_referable(self, id_short: str) -> Referable:
-        referable: Referable
-        referable_descended: Referable
-        for identifiable in self._backend.values():
-            for referable in identifiable.descend():
-                if (
-                        issubclass(type(referable), Referable)
-                        and id_short in [referable_descended.id_short
-                                         for referable_descended in referable.descend_once()]
-                ):
-                    return referable
+        for element in self.descend():
+            if isinstance(element, Referable):
+                children_referables = element.descend_once()
+                for referable in children_referables:
+                    if isinstance(referable, Referable) and referable.id_short == id_short:
+                        return element
         raise KeyError("there is no parent Identifiable for id_short {}".format(id_short))
 
     def __contains__(self, x: object) -> bool:
