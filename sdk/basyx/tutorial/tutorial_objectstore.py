@@ -5,9 +5,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-from basyx.objectstore import ObjectStore
-from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
-import aas_core3.types as aas_types
+from sdk.basyx.object_store import ObjectStore
+from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind  # type: ignore
+import aas_core3.types as aas_types  # type: ignore
 
 aas = AssetAdministrationShell(id="urn:x-test:aas1",
                                asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
@@ -37,7 +37,8 @@ another_list_element = aas_types.Blob(
 )
 
 element_list = aas_types.SubmodelElementList(id_short='ExampleSubmodelList',
-                                             type_value_list_element=aas_types.AASSubmodelElements.SUBMODEL_ELEMENT_LIST,
+                                             type_value_list_element=aas_types.AASSubmodelElements.
+                                             SUBMODEL_ELEMENT_LIST,
                                              value=[list_element, another_list_element])
 
 submodel1 = aas_types.Submodel(
@@ -76,4 +77,3 @@ print(another_list_element in obj_store.get_children_referable('ExampleSubmodelL
 # Retrieve parent of list_element by id_short
 
 print(element_list == obj_store.get_parent_referable("list_1"))
-
