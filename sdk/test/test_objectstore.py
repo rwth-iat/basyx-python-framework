@@ -8,8 +8,8 @@
 import unittest
 
 from basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
-from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind  # type: ignore
-import aas_core3.types as aas_types  # type: ignore
+from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
+import aas_core3.types as aas_types
 
 
 class ProvidersTest(unittest.TestCase):
@@ -119,7 +119,7 @@ class ProvidersTest(unittest.TestCase):
     def test_get_children_referable(self) -> None:
         object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
         object_store.add(self.submodel1)
-        children = object_store.get_children_referable('ExampleSubmodelList')
+        children = object_store.get_children_referable("urn:x-test:submodel1", 'ExampleSubmodelList')
         assert self.list_element in children
         assert self.another_list_element in children
 

@@ -121,7 +121,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         raise KeyError("Referable object with short_id {} does not exist for identifiable object with id {}"
                        .format(id_short, identifier))
 
-    def get_children_referable(self,identifier: str, id_short: str) -> List[Referable]:
+    def get_children_referable(self, identifier: str, id_short: str) -> List[Referable]:
         referable = self.get_referable(identifier, id_short)
         children_referable: List[Referable] = []
         for element in referable.descend():
