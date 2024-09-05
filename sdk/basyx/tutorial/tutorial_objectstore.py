@@ -72,7 +72,8 @@ print(element_list == obj_store.get_referable(identifier="urn:x-test:submodel1",
 # retrieve children of element_list by id_short
 
 print(list_element in obj_store.get_children_referable('urn:x-test:submodel1','ExampleSubmodelList'))
-print(another_list_element in obj_store.get_children_referable('urn:x-test:submodel1', 'ExampleSubmodelList'))
+print(another_list_element in obj_store.get_children_referable('urn:x-test:submodel1'
+                                                               , 'ExampleSubmodelList'))
 
 # Retrieve parent of list_element by id_short
 
