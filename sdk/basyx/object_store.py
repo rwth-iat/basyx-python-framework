@@ -15,9 +15,8 @@ from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional,
 
 from aas_core3.types import Identifiable, Referable, Class
 
-# We define types for :class:`aas_core3.types.Identifier` and :class:`aas_core3.types.Referable` for easier referencing.
+# We define types for :class:`aas_core3.types.Identifier` for easier referencing.
 _IdentifiableType = TypeVar('_IdentifiableType', bound=Identifiable)
-_ReferableType = TypeVar('_ReferableType', bound=Referable)
 
 
 class AbstractObjectProvider(metaclass=abc.ABCMeta):
@@ -150,12 +149,13 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         """
         referable: Referable
         identifiable = self.get_identifiable(identifier)
-        for element in identifiable.descend():
+        for referable in identifiable.descend():
 
             if (
-                    isinstance(element, Referable) and id_short == element.id_short
+                    issubclass(type(referable), Referable)
+                    and id_short in referable.id_short
             ):
-                return element
+                return referable
         raise KeyError("Referable object with short_id {} does not exist for identifiable object with id {}"
                        .format(id_short, identifier))
 
