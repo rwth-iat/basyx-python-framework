@@ -7,14 +7,13 @@
 
 import unittest
 
-from basyx.objectstore import ObjectStore, ObjectProviderMultiplexer
-from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
-import aas_core3.types as aas_types
+from basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
+from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind  # type: ignore
+import aas_core3.types as aas_types  # type: ignore
 
 
 class ProvidersTest(unittest.TestCase):
     def setUp(self) -> None:
-
         self.aas1 = AssetAdministrationShell(id="urn:x-test:aas1",
                                              asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
 
@@ -46,8 +45,9 @@ class ProvidersTest(unittest.TestCase):
         )
 
         self.element_list = aas_types.SubmodelElementList(id_short='ExampleSubmodelList',
-                                                     type_value_list_element=aas_types.AASSubmodelElements.SUBMODEL_ELEMENT_LIST,
-                                                     value=[self.list_element, self.another_list_element])
+                                                          type_value_list_element=aas_types.AASSubmodelElements.
+                                                          SUBMODEL_ELEMENT_LIST,
+                                                          value=[self.list_element, self.another_list_element])
 
         self.submodel1 = aas_types.Submodel(
             id="urn:x-test:submodel1",
@@ -69,7 +69,7 @@ class ProvidersTest(unittest.TestCase):
         object_store.add(self.aas1)
         object_store.add(self.aas2)
         self.assertIn(self.aas1, object_store)
-        property = aas_types.Property('test')
+        property = aas_types.Property('test')  # type: ignore
         self.assertFalse(property in object_store)
         aas3 = AssetAdministrationShell(id="urn:x-test:aas1", asset_information=AssetInformation(
             global_asset_id="http://acplt.org/TestAsset/", asset_kind=AssetKind.NOT_APPLICABLE))
@@ -113,7 +113,8 @@ class ProvidersTest(unittest.TestCase):
         self.assertIs(self.submodel1, multiplexer.get_identifiable("urn:x-test:submodel1"))
         with self.assertRaises(KeyError) as cm:
             multiplexer.get_identifiable("urn:x-test:submodel3")
-        self.assertEqual("'Identifier could not be found in any of the 2 consulted registries.'", str(cm.exception))
+        self.assertEqual("'Identifier could not be found in any of the 2 consulted registries.'",
+                         str(cm.exception))
 
     def test_get_children_referable(self) -> None:
         object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()

@@ -10,12 +10,12 @@ This module implements Registries for the AAS, in order to enable resolving glob
 """
 
 import abc
+import typing
 from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional, Iterable
 
 from aas_core3.types import Identifiable, Referable, Class
 
 _IdentifiableType = TypeVar('_IdentifiableType', bound=Identifiable)
-_ReferableType = TypeVar('_ReferableType', bound=Referable)
 
 
 class AbstractObjectProvider(metaclass=abc.ABCMeta):
@@ -55,7 +55,8 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
             return default
 
 
-class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IdentifiableType], Generic[_IdentifiableType], metaclass=abc.ABCMeta):
+class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IdentifiableType], Generic[_IdentifiableType],
+                          metaclass=abc.ABCMeta):
     """
     Abstract baseclass of for container-like objects for storage of `Identifiable` objects.
 
@@ -87,6 +88,14 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         for x in objects:
             self.add(x)
 
+    def descend(self) -> Iterator["Class"]:
+        """Iterate recursively over all the instances referenced from this one."""
+        if self._backend is not None:
+            for identifiable in self._backend.values():
+                yield identifiable
+
+                yield from identifiable.descend()
+
     def get_identifiable(self, identifier: str) -> _IdentifiableType:
         return self._backend[identifier]
 
@@ -100,30 +109,35 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         if self._backend.get(x.id) is x:
             del self._backend[x.id]
 
-    def get_referable(self, identifier: str, id_short: str) -> _ReferableType:
+    def get_referable(self, identifier: str, id_short: str) -> Referable:
         referable: Referable
         identifiable = self.get_identifiable(identifier)
-        for referable in identifiable.descend():
+        for element in identifiable.descend():
 
             if (
-                    issubclass(type(referable), Referable)
-                    and id_short in referable.id_short
+                    isinstance(element, Referable) and id_short == element.id_short
             ):
-                return referable
+                return element
+        raise KeyError("Referable object with short_id {} does not exist for identifiable object with id {}"
+                       .format(id_short, identifier))
 
-    def get_children_referable(self, id_short: str) -> [Referable]:
-        referable: Referable
-        for identifiable in self._backend.values():
-            if identifiable.id_short == id_short:
-                return identifiable.descend()
-            for referable in identifiable.descend():
-                if (
-                        issubclass(type(referable), Referable)
-                        and id_short in referable.id_short
-                ):
-                    return list(referable.descend())
-        raise KeyError("there is no referable with id_short {}".format(id_short))
+    def get_children_referable(self, id_short: str) -> List[Referable]:
+        referable_id_short: List[Referable] = []
+        for referable in self.descend():
+            if isinstance(referable, Referable) and id_short == referable.id_short:
+                referable_id_short.append(referable)
+        if len(referable_id_short) == 0:
+            raise KeyError("there is no referable with id_short {}".format(id_short))
+        if len(referable_id_short) != 1:
+            raise KeyError("there are multiple referables with id_short {}".format(id_short))
 
+        referable_list: list[Referable] = []
+        for element in referable_id_short[0].descend():
+            if isinstance(element, Referable):
+                referable_list.append(element)
+        return referable_list
+
+    @typing.no_type_check  # TODO fix typing
     def get_parent_referable(self, id_short: str) -> Referable:
         referable: Referable
         referable_descended: Referable
