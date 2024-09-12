@@ -7,7 +7,7 @@
 
 import unittest
 
-from sdk.basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
+from basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
 from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
 import aas_core3.types as aas_types
 
