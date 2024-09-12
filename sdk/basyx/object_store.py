@@ -10,7 +10,6 @@ This module implements Registries for the AAS, in order to enable resolving glob
 """
 
 import abc
-import typing
 from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional, Iterable
 
 from aas_core3.types import Identifiable, Referable, Class
