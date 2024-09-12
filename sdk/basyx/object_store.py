@@ -103,19 +103,40 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
                 yield from identifiable.descend()
 
     def get_identifiable(self, identifier: str) -> _IdentifiableType:
+        """
+        Retrieve identifiable by its identifer
+
+        :param identifier: `Identifier` of the object to return
+        """
         return self._backend[identifier]
 
     def add(self, x: _IdentifiableType) -> None:
+        """
+        Add identifiable to the Objectstore
+
+        :param x: Identifiable instance to add
+        """
         if x.id in self._backend and self._backend.get(x.id) is not x:
             raise KeyError("Identifiable object with same id {} is already stored in this store"
                            .format(x.id))
         self._backend[x.id] = x
 
     def discard(self, x: _IdentifiableType) -> None:
+        """
+        Discard identifiable from the Objectstore
+
+        :param x: Identifiable instance to discard
+        """
         if self._backend.get(x.id) is x:
             del self._backend[x.id]
 
     def get_referable(self, identifier: str, id_short: str) -> Referable:
+        """
+        Get referable by using its id_short and the identifier of the identifiable it refers to
+
+        :param identifier: Identifiable which the referable refers to
+        :param id_short: Id_short of the referable
+        """
         referable: Referable
         identifiable = self.get_identifiable(identifier)
         for element in identifiable.descend():
@@ -128,6 +149,13 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
                        .format(id_short, identifier))
 
     def get_children_referable(self, identifier: str, id_short: str) -> List[Referable]:
+        """
+        Get all referables which refer to one referable. This is done by using the id_short of the referable
+        and the identifier of the identifiable all referables refer to.
+
+        :param identifier: Identifiable which the referable refers to
+        :param id_short: Id_short of referable of which we want to obtain the children_referables
+        """
         referable = self.get_referable(identifier, id_short)
         children_referable: List[Referable] = []
         for element in referable.descend():
@@ -136,6 +164,11 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         return children_referable
 
     def get_parent_referable(self, id_short: str) -> Referable:
+        """
+        Get referable, to which the referable with id_short refers to.
+
+        :param id_short: Id_short of referable of which we want to obtain the parent referable of
+        """
         for element in self._descend():
             if isinstance(element, Referable):
                 children_referables = element.descend_once()
