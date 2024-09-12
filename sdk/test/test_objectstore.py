@@ -7,7 +7,7 @@
 
 import unittest
 
-from basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
+from sdk.basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
 from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
 import aas_core3.types as aas_types
 
@@ -65,7 +65,7 @@ class ProvidersTest(unittest.TestCase):
         )
 
     def test_store_retrieve(self) -> None:
-        object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store: ObjectStore[Identifiable] = ObjectStore()
         object_store.add(self.aas1)
         object_store.add(self.aas2)
         self.assertIn(self.aas1, object_store)
@@ -92,16 +92,16 @@ class ProvidersTest(unittest.TestCase):
         self.assertEqual(0, len(object_store))
 
     def test_store_update(self) -> None:
-        object_store1: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store1: ObjectStore[Identifiable] = ObjectStore()
         object_store1.add(self.aas1)
-        object_store2: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store2: ObjectStore[Identifiable] = ObjectStore()
         object_store2.add(self.aas2)
         object_store1.update(object_store2)
         self.assertIsInstance(object_store1, ObjectStore)
         self.assertIn(self.aas2, object_store1)
 
     def test_provider_multiplexer(self) -> None:
-        aas_object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        aas_object_store: ObjectStore[Identifiable] = ObjectStore()
         aas_object_store.add(self.aas1)
         aas_object_store.add(self.aas2)
         submodel_object_store: ObjectStore[aas_types.Submodel] = ObjectStore()
@@ -117,14 +117,14 @@ class ProvidersTest(unittest.TestCase):
                          str(cm.exception))
 
     def test_get_children_referable(self) -> None:
-        object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store: ObjectStore[Identifiable] = ObjectStore()
         object_store.add(self.submodel1)
         children = object_store.get_children_referable("urn:x-test:submodel1", 'ExampleSubmodelList')
         assert self.list_element in children
         assert self.another_list_element in children
 
     def test_get_parent_identifiable(self) -> None:
-        object_store: ObjectStore[AssetAdministrationShell] = ObjectStore()
+        object_store: ObjectStore[Identifiable] = ObjectStore()
         object_store.add(self.submodel1)
         object_store.add(self.submodel2)
         parent_referable = object_store.get_parent_referable("list_1")
