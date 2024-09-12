@@ -107,6 +107,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         Retrieve identifiable by its identifer
 
         :param identifier: `Identifier` of the object to return
+        :return: The `Identifiable` object
         """
         return self._backend[identifier]
 
@@ -136,6 +137,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
 
         :param identifier: Identifiable which the referable refers to
         :param id_short: Id_short of the referable
+        :return: The `Referable` object
         """
         referable: Referable
         identifiable = self.get_identifiable(identifier)
@@ -155,6 +157,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
 
         :param identifier: Identifiable which the referable refers to
         :param id_short: Id_short of referable of which we want to obtain the children_referables
+        :return: The `Referable` objects
         """
         referable = self.get_referable(identifier, id_short)
         children_referable: List[Referable] = []
@@ -168,6 +171,7 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         Get referable, to which the referable with id_short refers to.
 
         :param id_short: Id_short of referable of which we want to obtain the parent referable of
+        :return: The `Referable` parent object
         """
         for element in self._descend():
             if isinstance(element, Referable):
