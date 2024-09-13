@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from sdk.basyx.object_store import ObjectStore
+from basyx.object_store import ObjectStore
 from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
 import aas_core3.types as aas_types
 
