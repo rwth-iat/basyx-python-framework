@@ -16,6 +16,7 @@ sdk/basyx_python_framework.egg-info/
 /sdk/build
 /dist/
 /*.egg-info/
+sdk/*.egg-info/
 /docs/build/
 
 # Coverage artifacts

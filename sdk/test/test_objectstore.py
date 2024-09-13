@@ -7,7 +7,7 @@
 
 import unittest
 
-from basyx.object_store import ObjectStore, ObjectProviderMultiplexer  # type: ignore
+from basyx.object_store import ObjectStore, ObjectProviderMultiplexer
 from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
 import aas_core3.types as aas_types
 
@@ -18,6 +18,9 @@ class ProvidersTest(unittest.TestCase):
                                              asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
 
         self.aas2 = AssetAdministrationShell(id="urn:x-test:aas2",
+                                             asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
+
+        self.aas3 = AssetAdministrationShell(id="urn:x-test:aas3",
                                              asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
 
         some_element = aas_types.Property(
@@ -69,8 +72,7 @@ class ProvidersTest(unittest.TestCase):
         object_store.add(self.aas1)
         object_store.add(self.aas2)
         self.assertIn(self.aas1, object_store)
-        property = aas_types.Property('test')  # type: ignore
-        self.assertFalse(property in object_store)
+        self.assertFalse(self.aas3 in object_store)
         aas3 = AssetAdministrationShell(id="urn:x-test:aas1", asset_information=AssetInformation(
             global_asset_id="http://acplt.org/TestAsset/", asset_kind=AssetKind.NOT_APPLICABLE))
         with self.assertRaises(KeyError) as cm:
