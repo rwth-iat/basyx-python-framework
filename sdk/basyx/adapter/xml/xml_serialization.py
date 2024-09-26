@@ -843,8 +843,8 @@ def basic_event_element_to_xml(obj: model.BasicEventElement, tag: str = NS_AAS+"
     """
     et_basic_event_element = abstract_classes_to_xml(tag, obj)
     et_basic_event_element.append(reference_to_xml(obj.observed, NS_AAS+"observed"))
-    et_basic_event_element.append(_generate_element(NS_AAS+"direction", text=_generic.DIRECTION[obj.direction]))
-    et_basic_event_element.append(_generate_element(NS_AAS+"state", text=_generic.STATE_OF_EVENT[obj.state]))
+    et_basic_event_element.append(_generate_element(NS_AAS +"direction", text=_generic.DIRECTION[obj.direction]))
+    et_basic_event_element.append(_generate_element(NS_AAS +"state", text=_generic.STATE_OF_EVENT[obj.state]))
     if obj.message_topic is not None:
         et_basic_event_element.append(_generate_element(NS_AAS+"messageTopic", text=obj.message_topic))
     if obj.message_broker is not None:
