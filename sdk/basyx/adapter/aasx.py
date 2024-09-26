@@ -32,7 +32,7 @@ import re
 from typing import Dict, Tuple, IO, Union, List, Set, Optional, Iterable, Iterator
 
 from .xml import read_aas_xml_file, write_aas_xml_file
-from .. import model
+from basyx.aas import model
 from .json import read_aas_json_file, write_aas_json_file
 import pyecma376_2
 from ..util import traversal

@@ -41,7 +41,7 @@ found. Constructor functions of these elements will then again search for mandat
 and construct them if available, and so on.
 """
 
-from ... import model
+from basyx.aas import model
 from lxml import etree
 import logging
 import base64
