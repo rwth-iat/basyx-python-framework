@@ -6,7 +6,8 @@
 # SPDX-License-Identifier: MIT
 """
 This module implements Registries for the AAS, in order to enable resolving global
-`Identifiers`; and mapping `Identifiers` to `Identifiable` objects.
+:any:`Identifier <aas_core3.verification.verify_identifier>` and mapping
+:any:`Identifiers <aas_core3.verification.verify_identifier>` to :class:`~aas_core3.types.Identifiable` objects.
 """
 
 import abc
@@ -14,13 +15,16 @@ from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional,
 
 from aas_core3.types import Identifiable, Referable, Class
 
+# We define types for :class:`aas_core3.types.Identifier` and :class:`aas_core3.types.Referable` for easier referencing.
 _IdentifiableType = TypeVar('_IdentifiableType', bound=Identifiable)
+_ReferableType = TypeVar('_ReferableType', bound=Referable)
 
 
 class AbstractObjectProvider(metaclass=abc.ABCMeta):
     """
-    Abstract baseclass for all objects, that allow to retrieve `Identifiable` objects
-    (resp. proxy objects for remote `Identifiable` objects) by their `Identifier`.
+    Abstract baseclass for all objects, that allows to retrieve :class:`~aas_core3.types.Identifiable` objects
+    (resp. proxy objects for remote :class:`~aas_core3.types.Identifiable` objects) by their
+    :any:`Identifier <aas_core3.verification.verify_identifier>`
 
     This includes local object stores, database clients and AAS API clients.
     """
@@ -28,25 +32,30 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_identifiable(self, identifier: str) -> Identifiable:
         """
-        Find an `Identifiable` by its `Identifier`
+        Find an :class:`~aas_core3.types.Identifiable` by its
+        :any:`Identifier <aas_core3.verification.verify_identifier>`
 
         This may include looking up the object's endpoint in a registry and fetching it from an HTTP server or a
         database.
 
-        :param identifier: `Identifier` of the object to return
-        :return: The `Identifiable` object (or a proxy object for a remote `Identifiable` object)
-        :raises KeyError: If no such `Identifiable` can be found
+        :param identifier: :any:`Identifier <aas_core3.verification.verify_identifier>` of the object to return
+        :return: The :class:`~aas_core3.types.Identifiable` object (or a proxy object for a remote
+                 :class:`~aas_core3.types.Identifiable` object)
+        :raises KeyError: If no such :class:`~aas_core3.types.Identifiable` can be found
         """
         pass
 
     def get(self, identifier: str, default: Optional[Identifiable] = None) -> Optional[Identifiable]:
         """
-        Find an object in this set by its `Identifier`, with fallback parameter
+        Find an object in this set by its :any:`Identifier <aas_core3.verification.verify_identifier>`,
+        with fallback parameter
 
-        :param identifier: `Identifier` of the object to return
-        :param default: An object to be returned, if no object with the given `Identifier` is found
-        :return: The `Identifiable` object with the given `Identifier` in the provider. Otherwise, the ``default``
-                 object or None, if none is given.
+        :param identifier: :any:`Identifier <aas_core3.verification.verify_identifier>` of the object to return
+        :param default: An object to be returned, if no object with the given
+                        :any:`Identifier <aas_core3.verification.verify_identifier>` is found
+        :return: The :class:`~aas_core3.types.Identifiable` object with the given
+                 :any:`Identifier <aas_core3.verification.verify_identifier>` in the provider.
+                 Otherwise, the ``default`` object or None, if none is given.
         """
         try:
             return self.get_identifiable(identifier)
@@ -57,11 +66,11 @@ class AbstractObjectProvider(metaclass=abc.ABCMeta):
 class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IdentifiableType], Generic[_IdentifiableType],
                           metaclass=abc.ABCMeta):
     """
-    Abstract baseclass of for container-like objects for storage of `Identifiable` objects.
+    Abstract baseclass of for container-like objects for storage of :class:`~aas_core3.types.Identifiable` objects.
 
     ObjectStores are special ObjectProvides that – in addition to retrieving objects by
-    `Identifier` – allow to add and delete objects (i.e. behave like a Python set).
-    This includes local object stores (like :class:`~.DictObjectStore`) and database `Backends`.
+    :any:`Identifier <aas_core3.verification.verify_identifier>` – allow to add and delete objects (i.e. behave like a
+    Python set).
 
     The AbstractObjectStore inherits from the :class:`~collections.abc.MutableSet` abstract collections class and
     therefore implements all the functions of this class.
@@ -78,8 +87,8 @@ class AbstractObjectStore(AbstractObjectProvider, MutableSet[_IdentifiableType],
 
 class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableType]):
     """
-    A local in-memory object store for `Identifiable` objects, backed by a dict, mapping
-    `Identifier` → `Identifiable`
+    A local in-memory object store for :class:`~aas_core3.types.Identifiable` objects, backed by a dict, mapping
+    :any:`Identifier <aas_core3.verification.verify_identifier>` → :class:`~aas_core3.types.Identifiable`
     """
 
     def __init__(self, objects: Iterable[_IdentifiableType] = ()) -> None:
@@ -197,10 +206,10 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
 
 class ObjectProviderMultiplexer(AbstractObjectProvider):
     """
-    A multiplexer for Providers of `Identifiable` objects.
+    A multiplexer for Providers of :class:`~aas_core3.types.Identifiable` objects.
 
-    This class combines multiple registries of `Identifiable` objects into a single one
-    to allow retrieving `Identifiable` objects from different sources.
+    This class combines multiple registries of :class:`~aas_core3.types.Identifiable` objects into a single one
+    to allow retrieving :class:`~aas_core3.types.Identifiable` objects from different sources.
     It implements the :class:`~.AbstractObjectProvider` interface to be used as registry itself.
 
     :ivar providers: A list of :class:`AbstractObjectProviders <.AbstractObjectProvider>` to query when looking up an
