@@ -1,78 +1,145 @@
-import json
+#!/usr/bin/env python3
+# This work is licensed under a Creative Commons CCZero 1.0 Universal License.
+# See http://creativecommons.org/publicdomain/zero/1.0/ for more information.
+"""
+Tutorial for the creation of a simple Asset Administration Shell, containing an AssetInformation object and a Submodel
+reference using aas-core3.0-python
+"""
+
+# Import all type classes from the aas-core3.0-python SDK
 import aas_core3.types as aas_types
-import aas_core3.jsonization as aas_jsonization
-from basyx.object_store import ObjectStore
-from basyx.adapter.aasx import AASXWriter, AASXReader, DictSupplementaryFileContainer
-import pyecma376_2  # The base library for Open Packaging Specifications. We will use the OPCCoreProperties class.
-import datetime
-from pathlib import Path  # Used for easier handling of auxiliary file's local path
+from aas_core3 import verification
 
-Referencetype = aas_types.ReferenceTypes("ModelReference")
+# In this tutorial, you'll get a step-by-step guide on how to create an Asset Administration Shell (AAS) and all
+# required objects within. First, you need an AssetInformation object for which you want to create an AAS. After that,
+# an Asset Administration Shell can be created. Then, it's possible to add Submodels to the AAS. The Submodels can
+# contain SubmodelElements.
 
-key_types = aas_types.KeyTypes("Submodel")
+# Step-by-Step Guide:
+# Step 1: create a simple Asset Administration Shell, containing AssetInformation object
+# Step 2: create a simple Submodel
+# Step 3: create a simple Property and add it to the Submodel
 
-key = aas_types.Key(value="some-unique-global-identifier", type=key_types)
 
-reference = aas_types.Reference(type=Referencetype, keys=[key])
+############################################################################################
+# Step 1: Create a Simple Asset Administration Shell Containing an AssetInformation object #
+############################################################################################
+# Step 1.1: create the AssetInformation object
+asset_information = aas_types.AssetInformation(
+    asset_kind=aas_types.AssetKind.INSTANCE,
+    global_asset_id='http://acplt.org/Simple_Asset'
+)
 
+# Step 1.2: create the Asset Administration Shell
+identifier = 'https://acplt.org/Simple_AAS'
+aas = aas_types.AssetAdministrationShell(
+    id=identifier,  # set identifier
+    asset_information=asset_information,
+    submodels=[]
+)
+
+
+#############################################################
+# Step 2: Create a Simple Submodel Without SubmodelElements #
+#############################################################
+
+# Step 2.1: create the Submodel object
+identifier = 'https://acplt.org/Simple_Submodel'
 submodel = aas_types.Submodel(
-    id="some-unique-global-identifier",
+    id=identifier,
+    submodel_elements=[]
+)
+
+# Step 2.2: create a reference to that Submodel and add it to the Asset Administration Shell's `submodel` set
+submodel_reference = aas_types.Reference(
+    type=aas_types.ReferenceTypes.MODEL_REFERENCE,
+    keys=[aas_types.Key(
+        type=aas_types.KeyTypes.SUBMODEL,
+        value=identifier
+    )]
+)
+
+# Warning, this overwrites whatever is in the `aas.submodels` list.
+# In your production code, it might make sense to check for already existing content.
+aas.submodels = [submodel_reference]
+
+
+# ===============================================================
+# ALTERNATIVE: step 1 and 2 can alternatively be done in one step
+# In this version, the Submodel reference is passed to the Asset Administration Shell's constructor.
+submodel = aas_types.Submodel(
+    id='https://acplt.org/Simple_Submodel',
+    submodel_elements=[]
+)
+aas = aas_types.AssetAdministrationShell(
+    id='https://acplt.org/Simple_AAS',
+    asset_information=asset_information,
+    submodels=[aas_types.Reference(
+        type=aas_types.ReferenceTypes.MODEL_REFERENCE,
+        keys=[aas_types.Key(
+            type=aas_types.KeyTypes.SUBMODEL,
+            value='https://acplt.org/Simple_Submodel'
+        )]
+    )]
+)
+
+
+###############################################################
+# Step 3: Create a Simple Property and Add it to the Submodel #
+###############################################################
+
+# Step 3.1: create a global reference to a semantic description of the Property
+# A global reference consists of one key which points to the address where the semantic description is stored
+semantic_reference = aas_types.Reference(
+    type=aas_types.ReferenceTypes.MODEL_REFERENCE,
+    keys=[aas_types.Key(
+        type=aas_types.KeyTypes.GLOBAL_REFERENCE,
+        value='http://acplt.org/Properties/SimpleProperty'
+    )]
+)
+
+# Step 3.2: create the simple Property
+property_ = aas_types.Property(
+    id_short='ExampleProperty',  # Identifying string of the element within the Submodel namespace
+    value_type=aas_types.DataTypeDefXSD.STRING,  # Data type of the value
+    value='exampleValue',  # Value of the Property
+    semantic_id=semantic_reference  # set the semantic reference
+)
+
+# Step 3.3: add the Property to the Submodel
+
+# Warning, this overwrites whatever is in the `submodel_elements` list.
+# In your production code, it might make sense to check for already existing content.
+submodel.submodel_elements = [property_]
+
+
+# =====================================================================
+# ALTERNATIVE: step 2 and 3 can also be combined in a single statement:
+# Again, we pass the Property to the Submodel's constructor instead of adding it afterward.
+submodel = aas_types.Submodel(
+    id='https://acplt.org/Simple_Submodel',
     submodel_elements=[
         aas_types.Property(
-            id_short="some_property",
-            value_type=aas_types.DataTypeDefXSD.INT,
-            value="1984",
-            semantic_id=reference
+            id_short='ExampleProperty',
+            value_type=aas_types.DataTypeDefXSD.STRING,
+            value='exampleValue',
+            semantic_id=aas_types.Reference(
+                type=aas_types.ReferenceTypes.MODEL_REFERENCE,
+                keys=[aas_types.Key(
+                    type=aas_types.KeyTypes.GLOBAL_REFERENCE,
+                    value='http://acplt.org/Properties/SimpleProperty'
+                )]
+            )
         )
     ]
 )
 
-file_store = DictSupplementaryFileContainer()
+##########################################################################
+# Step 4: Verify the Asset Administration Shell (AAS) and its components #
+##########################################################################
+# This step ensures that the AAS conforms to the rules and constraints defined by the AAS metamodel. The fields
+# themselves do not underlie any restriction.
 
-with open(Path(__file__).parent / 'data' / 'TestFile.pdf', 'rb') as f:
-    actual_file_name = file_store.add_file("/aasx/suppl/MyExampleFile.pdf", f, "application/pdf")
-
-if submodel.submodel_elements is not None:
-    submodel.submodel_elements.append(aas_types.File(id_short="documentationFile",
-                                                     content_type="application/pdf",
-                                                     value=actual_file_name))
-
-aas = aas_types.AssetAdministrationShell(id="urn:x-test:aas1",
-                                         asset_information=aas_types.AssetInformation(
-                                             asset_kind=aas_types.AssetKind.TYPE),
-                                         submodels=[reference])
-
-obj_store: ObjectStore = ObjectStore()
-obj_store.add(aas)
-obj_store.add(submodel)
-
-
-# Serialize to a JSON-able mapping
-jsonable = aas_jsonization.to_jsonable(submodel)
-
-
-meta_data = pyecma376_2.OPCCoreProperties()
-meta_data.creator = "Chair of Process Control Engineering"
-meta_data.created = datetime.datetime.now()
-
-with AASXWriter("./MyAASXPackage.aasx") as writer:
-    writer.write_aas(aas_ids=["urn:x-test:aas1"],
-                     object_store=obj_store,
-                     file_store=file_store,
-                     write_json=False)
-    writer.write_core_properties(meta_data)
-
-new_object_store: ObjectStore = ObjectStore()
-new_file_store = DictSupplementaryFileContainer()
-
-with AASXReader("./MyAASXPackage.aasx") as reader:
-    # Read all contained AAS objects and all referenced auxiliary files
-    reader.read_into(object_store=new_object_store,
-                     file_store=new_file_store)
-
-print(new_object_store.__len__())
-for item in file_store.__iter__():
-    print(item)
-
-for item in new_file_store.__iter__():
-    print(item)
+# We can use aas_core3.verification.verify(). This method returns an Iterator that we can collect into a list and
+# for demonstration reasons assert it to be empty.
+assert len(list(verification.verify(aas))) == 0
