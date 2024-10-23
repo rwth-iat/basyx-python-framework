@@ -16,7 +16,7 @@ signatures.
 
 Writing and reading of AASX packages is performed through the :class:`~.AASXReader` and :class:`~.AASXWriter` classes.
 Each instance of these classes wraps an existing AASX file resp. a file to be created and allows to read/write the
-included AAS objects into/form :class:`ObjectStores <basyx.aas.model.provider.AbstractObjectStore>`.
+included AAS objects into/form :class:`ObjectStores <basyx.ObjectStore>`.
 For handling of embedded supplementary files, this module provides the
 :class:`~.AbstractSupplementaryFileContainer` class
 interface and the :class:`~.DictSupplementaryFileContainer` implementation.
@@ -31,12 +31,14 @@ import os
 import re
 from typing import Dict, Tuple, IO, Union, List, Set, Optional, Iterable, Iterator
 
-from .xml import read_aas_xml_file, write_aas_xml_file
-from basyx.aas import model
-from .json import read_aas_json_file, write_aas_json_file
+from basyx.object_store import ObjectStore
+from aas_core3 import types as model
+from .json.json_serialization import write_aas_json_file
+from .json.json_deserialization import read_aas_json_file
+from .xml.xml_serialization import write_aas_xml_file
+from .xml.xml_deserialization import read_aas_xml_file
 import pyecma376_2
-from ..util import traversal
-
+from .xml.xml_serialization import write_aas_xml_file
 logger = logging.getLogger(__name__)
 
 RELATIONSHIP_TYPE_AASX_ORIGIN = "http://admin-shell.io/aasx/relationships/aasx-origin"
@@ -113,9 +115,9 @@ class AASXReader:
         with self.reader.open_part(thumbnail_part) as p:
             return p.read()
 
-    def read_into(self, object_store: model.AbstractObjectStore,
+    def read_into(self, object_store: ObjectStore,
                   file_store: "AbstractSupplementaryFileContainer",
-                  override_existing: bool = False, **kwargs) -> Set[model.Identifier]:
+                  override_existing: bool = False, **kwargs) -> Set[str]:
         """
         Read the contents of the AASX package and add them into a given
         :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>`
@@ -145,7 +147,7 @@ class AASXReader:
         except IndexError as e:
             raise ValueError("Not a valid AASX file: aasx-origin Relationship is missing.") from e
 
-        read_identifiables: Set[model.Identifier] = set()
+        read_identifiables: Set[str] = set()
 
         # Iterate AAS files
         for aas_part in self.reader.get_related_parts_by_type(aasx_origin_part)[
@@ -174,9 +176,9 @@ class AASXReader:
         self.close()
 
     def _read_aas_part_into(self, part_name: str,
-                            object_store: model.AbstractObjectStore,
+                            object_store: ObjectStore,
                             file_store: "AbstractSupplementaryFileContainer",
-                            read_identifiables: Set[model.Identifier],
+                            read_identifiables: Set[str],
                             override_existing: bool, **kwargs) -> None:
         """
         Helper function for :meth:`read_into()` to read and process the contents of an AAS-spec part of the AASX file.
@@ -193,6 +195,8 @@ class AASXReader:
         :param override_existing: If True, existing objects in the object store are overridden with objects from the
             AASX that have the same Identifer. Default behavior is to skip those objects from the AASX.
         """
+        #print("asd123123123")
+
         for obj in self._parse_aas_part(part_name, **kwargs):
             if obj.id in read_identifiables:
                 continue
@@ -209,7 +213,7 @@ class AASXReader:
             if isinstance(obj, model.Submodel):
                 self._collect_supplementary_files(part_name, obj, file_store)
 
-    def _parse_aas_part(self, part_name: str, **kwargs) -> model.DictObjectStore:
+    def _parse_aas_part(self, part_name: str, **kwargs) -> ObjectStore:
         """
         Helper function to parse the AAS objects from a single JSON or XML part of the AASX package.
 
@@ -218,21 +222,26 @@ class AASXReader:
         :param part_name: The OPC part name of the part to be parsed
         :return: A DictObjectStore containing the parsed AAS objects
         """
+        #print("asd123123123")
+
         content_type = self.reader.get_content_type(part_name)
         extension = part_name.split("/")[-1].split(".")[-1]
         if content_type.split(";")[0] in ("text/xml", "application/xml") or content_type == "" and extension == "xml":
             logger.debug("Parsing AAS objects from XML stream in OPC part {} ...".format(part_name))
             with self.reader.open_part(part_name) as p:
+                #print(part_name)
                 return read_aas_xml_file(p, **kwargs)
         elif content_type.split(";")[0] in ("text/json", "application/json") \
                 or content_type == "" and extension == "json":
             logger.debug("Parsing AAS objects from JSON stream in OPC part {} ...".format(part_name))
+            #print("asd123123123")
+
             with self.reader.open_part(part_name) as p:
                 return read_aas_json_file(io.TextIOWrapper(p, encoding='utf-8-sig'), **kwargs)
         else:
             logger.error("Could not determine part format of AASX part {} (Content Type: {}, extension: {}"
                          .format(part_name, content_type, extension))
-            return model.DictObjectStore()
+            return ObjectStore()
 
     def _collect_supplementary_files(self, part_name: str, submodel: model.Submodel,
                                      file_store: "AbstractSupplementaryFileContainer") -> None:
@@ -245,7 +254,7 @@ class AASXReader:
         :param submodel: The Submodel to process
         :param file_store: The SupplementaryFileContainer to add the extracted supplementary files to
         """
-        for element in traversal.walk_submodel(submodel):
+        for element in submodel.descend():
             if isinstance(element, model.File):
                 if element.value is None:
                     continue
@@ -261,6 +270,7 @@ class AASXReader:
                 with self.reader.open_part(absolute_name) as p:
                     final_name = file_store.add_file(absolute_name, p, self.reader.get_content_type(absolute_name))
                 element.value = final_name
+
 
 
 class AASXWriter:
@@ -321,8 +331,8 @@ class AASXWriter:
         p.close()
 
     def write_aas(self,
-                  aas_ids: Union[model.Identifier, Iterable[model.Identifier]],
-                  object_store: model.AbstractObjectStore,
+                  aas_ids: Union[str],
+                  object_store: ObjectStore,
                   file_store: "AbstractSupplementaryFileContainer",
                   write_json: bool = False) -> None:
         """
@@ -369,10 +379,10 @@ class AASXWriter:
         :raises TypeError: If one of the given AAS ids does not resolve to an AAS (but another
             :class:`~basyx.aas.model.base.Identifiable` object)
         """
-        if isinstance(aas_ids, model.Identifier):
-            aas_ids = (aas_ids,)
+        #if isinstance(aas_ids, model.Identifiable.id):
+        #    aas_ids = (aas_ids,)
 
-        objects_to_be_written: model.DictObjectStore[model.Identifiable] = model.DictObjectStore()
+        objects_to_be_written: ObjectStore[model.Identifiable] = ObjectStore()
         for aas_id in aas_ids:
             try:
                 aas = object_store.get_identifiable(aas_id)
@@ -382,39 +392,40 @@ class AASXWriter:
             if not isinstance(aas, model.AssetAdministrationShell):
                 raise TypeError(f"Identifier {aas_id} does not belong to an AssetAdminstrationShell object but to "
                                 f"{aas!r}")
-
+            assert isinstance(aas,model.AssetAdministrationShell)
             # Add the AssetAdministrationShell object to the data part
             objects_to_be_written.add(aas)
 
             # Add referenced Submodels to the data part
-            for submodel_ref in aas.submodel:
+            for submodel_ref in aas.submodels:
                 try:
-                    submodel = submodel_ref.resolve(object_store)
+                    submodel_keys = submodel_ref.keys
+                    for key in submodel_keys:
+                        submodel_id = key.value
+                        try:
+                            submodel = object_store.get_identifiable(submodel_id)
+                        except Exception:
+                            continue
+                        objects_to_be_written.add(submodel)
+
                 except KeyError:
                     logger.warning("Could not find submodel %s. Skipping it.", str(submodel_ref))
                     continue
-                objects_to_be_written.add(submodel)
 
         # Traverse object tree and check if semanticIds are referencing to existing ConceptDescriptions in the
         # ObjectStore
         concept_descriptions: List[model.ConceptDescription] = []
         for identifiable in objects_to_be_written:
-            for semantic_id in traversal.walk_semantic_ids_recursive(identifiable):
-                if not isinstance(semantic_id, model.ModelReference) \
-                        or semantic_id.type is not model.ConceptDescription:
-                    logger.info("semanticId %s does not reference a ConceptDescription.", str(semantic_id))
-                    continue
+            for element in identifiable.descend():
                 try:
-                    cd = semantic_id.resolve(object_store)
-                except KeyError:
-                    logger.info("ConceptDescription for semantidId %s not found in object store.", str(semantic_id))
-                    continue
-                except model.UnexpectedTypeError as e:
-                    logger.error("semantidId %s resolves to %s, which is not a ConceptDescription",
-                                 str(semantic_id), e.value)
-                    continue
-                concept_descriptions.append(cd)
-        objects_to_be_written.update(concept_descriptions)
+                    semantic_id = element.semantic_id
+                    cd = object_store.get_identifiable(semantic_id)
+                    concept_descriptions.append(cd)
+                except Exception:
+                        continue
+
+        for element in concept_descriptions:
+            objects_to_be_written.add(element)
 
         # Write AAS data part
         self.write_all_aas_objects("/aasx/data.{}".format("json" if write_json else "xml"),
@@ -424,8 +435,8 @@ class AASXWriter:
     #   Not actually required since you can always create a local dict
     def write_aas_objects(self,
                           part_name: str,
-                          object_ids: Iterable[model.Identifier],
-                          object_store: model.AbstractObjectStore,
+                          object_ids: Iterable[str],
+                          object_store: ObjectStore,
                           file_store: "AbstractSupplementaryFileContainer",
                           write_json: bool = False,
                           split_part: bool = False,
@@ -463,7 +474,7 @@ class AASXWriter:
         """
         logger.debug("Writing AASX part {} with AAS objects ...".format(part_name))
 
-        objects: model.DictObjectStore[model.Identifiable] = model.DictObjectStore()
+        objects: ObjectStore[model.Identifiable] = ObjectStore()
 
         # Retrieve objects and scan for referenced supplementary files
         for identifier in object_ids:
@@ -480,7 +491,7 @@ class AASXWriter:
     #   Not required anymore since changes from DotAAS version 2.0.1 to 3.0RC01
     def write_all_aas_objects(self,
                               part_name: str,
-                              objects: model.AbstractObjectStore[model.Identifiable],
+                              objects: ObjectStore,
                               file_store: "AbstractSupplementaryFileContainer",
                               write_json: bool = False,
                               split_part: bool = False,
@@ -515,10 +526,11 @@ class AASXWriter:
         logger.debug("Writing AASX part {} with AAS objects ...".format(part_name))
         supplementary_files: List[str] = []
 
+
         # Retrieve objects and scan for referenced supplementary files
         for the_object in objects:
             if isinstance(the_object, model.Submodel):
-                for element in traversal.walk_submodel(the_object):
+                for element in the_object.descend():
                     if isinstance(element, model.File):
                         file_name = element.value
                         # Skip File objects with empty value URI references that are considered to be no local file
@@ -527,17 +539,27 @@ class AASXWriter:
                             continue
                         supplementary_files.append(file_name)
 
+
+
+
         # Add aas-spec relationship
         if not split_part:
             self._aas_part_names.append(part_name)
 
+
+
         # Write part
         # TODO allow writing xml *and* JSON part
+        #print(part_name)
         with self.writer.open_part(part_name, "application/json" if write_json else "application/xml") as p:
             if write_json:
                 write_aas_json_file(io.TextIOWrapper(p, encoding='utf-8'), objects)
             else:
                 write_aas_xml_file(p, objects)
+
+
+
+
 
         # Write submodel's supplementary files to AASX file
         supplementary_file_names = []
@@ -571,6 +593,9 @@ class AASXWriter:
                  for i, submodel_file_name in enumerate(supplementary_file_names)),
                 additional_relationships),
             part_name)
+
+
+
 
     def write_core_properties(self, core_properties: pyecma376_2.OPCCoreProperties):
         """
@@ -675,7 +700,7 @@ class NameFriendlyfier:
     def __init__(self) -> None:
         self.issued_names: Set[str] = set()
 
-    def get_friendly_name(self, identifier: model.Identifier):
+    def get_friendly_name(self, identifier: str):
         """
         Generate a friendly name from an AAS identifier.
 
