@@ -141,5 +141,9 @@ submodel = aas_types.Submodel(
 # themselves do not underlie any restriction.
 
 # We can use aas_core3.verification.verify(). This method returns an Iterator that we can collect into a list and
-# for demonstration reasons assert it to be empty.
+# for demonstration reasons assert it to be empty. Each item in this iterator represents a violation of the AAS
+# meta-model rules or constraints (e.g. Missing required fields, Invalid types of fields, ...).
+
+# For more information refer to the official aas-core documentation.
+
 assert len(list(verification.verify(aas))) == 0
