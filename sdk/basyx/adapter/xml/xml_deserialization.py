@@ -103,7 +103,8 @@ def _parse_xml_document(file: PathOrIO, failsafe: bool = True, **parser_kwargs: 
 
 
 def read_aas_xml_file_into(object_store: ObjectStore, file: PathOrIO,
-                           replace_existing: bool = False, ignore_existing: bool = False) -> Set[str]:
+                           replace_existing: bool = False, ignore_existing: bool = False,
+                           **parser_kwargs: Any) -> Set[str]:
     """
     Read an Asset Administration Shell XML file according to 'Details of the Asset Administration Shell', chapter 5.4
     into a given :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>`.
@@ -134,8 +135,9 @@ def read_aas_xml_file_into(object_store: ObjectStore, file: PathOrIO,
     }
 
     element_constructors = {NS_AAS + k: v for k, v in element_constructors.items()}
+    parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, **parser_kwargs)
 
-    root = etree.parse(file).getroot()
+    root = etree.parse(file, parser).getroot()
 
 
     if root is None:
@@ -152,23 +154,23 @@ def read_aas_xml_file_into(object_store: ObjectStore, file: PathOrIO,
 
         for element in list_:
             str = etree.tostring(element).decode("utf-8-sig")
-            constructor = element_constructors[element_tag](str)
+            identifiable = element_constructors[element_tag](str)
 
-            if constructor.id in ret:
+            if identifiable.id in ret:
                 error_message = f"{element} has a duplicate identifier already parsed in the document!"
                 raise KeyError(error_message)
-            existing_element = object_store.get(constructor.id)
+            existing_element = object_store.get(identifiable.id)
             if existing_element is not None:
                 if not replace_existing:
-                    error_message = f"object with identifier {constructor.id} already exists " \
+                    error_message = f"object with identifier {identifiable.id} already exists " \
                                     f"in the object store: {existing_element}!"
                     if not ignore_existing:
-                        raise KeyError(error_message + f" failed to insert {constructor}!")
-                    logger.info(error_message + f" skipping insertion of {constructor}...")
+                        raise KeyError(error_message + f" failed to insert {identifiable}!")
+                    logger.info(error_message + f" skipping insertion of {identifiable}...")
                     continue
                 object_store.discard(existing_element)
-            object_store.add(constructor)
-            ret.add(constructor.id)
+            object_store.add(identifiable)
+            ret.add(identifiable.id)
 
     return ret
 

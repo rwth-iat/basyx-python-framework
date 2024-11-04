@@ -74,7 +74,8 @@ def read_aas_json_file_into(object_store: ObjectStore, file: PathOrIO, replace_e
 
         for item in lst:
             identifiable = aas_jsonization.identifiable_from_jsonable(item)
-
+            print(type(identifiable))
+            print(expected_type)
             if identifiable.id in ret:
                 error_message = f"{item} has a duplicate identifier already parsed in the document!"
                 raise KeyError(error_message)

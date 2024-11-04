@@ -10,22 +10,7 @@
 
 Module for serializing Asset Administration Shell objects to the official JSON format
 
-The module provides an custom JSONEncoder classes :class:`AASToJsonEncoder` and :class:`StrippedAASToJsonEncoder`
-to be used with the Python standard :mod:`json` module. While the former serializes objects as defined in the
-specification, the latter serializes stripped objects, excluding some attributes
-(see https://git.rwth-aachen.de/acplt/pyi40aas/-/issues/91).
-Each class contains a custom :meth:`~.AASToJsonEncoder.default` function which converts BaSyx Python SDK objects to
-simple python types for an automatic JSON serialization.
-To simplify the usage of this module, the :meth:`write_aas_json_file` and :meth:`object_store_to_json` are provided.
-The former is used to serialize a given :class:`~basyx.AbstractObjectStore` to a file, while the
-latter serializes the object store to a string and returns it.
 
-The serialization is performed in an iterative approach: The :meth:`~.AASToJsonEncoder.default` function gets called for
-every object and checks if an object is an BaSyx Python SDK object. In this case, it calls a special function for the
-respective BaSyx Python SDK class which converts the object (but not the contained objects) into a simple Python dict,
-which is serializable. Any contained  BaSyx Python SDK objects are included into the dict as they are to be converted
-later on. The special helper function ``_abstract_classes_to_json`` is called by most of the
-conversion functions to handle all the attributes of abstract base classes.
 """
 import base64
 import contextlib
@@ -68,6 +53,13 @@ def _create_dict(data: ObjectStore) -> dict:
     if concept_descriptions:
         dict_['conceptDescriptions'] = concept_descriptions
     return dict_
+
+class _DetachingTextIOWrapper(io.TextIOWrapper):
+    """
+    Like :class:`io.TextIOWrapper`, but detaches on context exit instead of closing the wrapped buffer.
+    """
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.detach()
 
 def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
     """
