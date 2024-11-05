@@ -29,17 +29,20 @@ import itertools
 import logging
 import os
 import re
-from typing import Dict, Tuple, IO, Union, List, Set, Optional, Iterable, Iterator
+import contextlib
+import json
+
+from typing import (Dict, Tuple, IO, Union, List, Set, Optional, Iterable, BinaryIO, TextIO, Any, Callable,
+                    Iterator, ContextManager, TypeVar, get_args, Type)
 
 from aas_core3.types import HasSemantics
 from basyx.object_store import ObjectStore
 from aas_core3 import types as model
-from .json.json_serialization import write_aas_json_file
-from .json.json_deserialization import read_aas_json_file
-from .xml.xml_serialization import write_aas_xml_file
-from .xml.xml_deserialization import read_aas_xml_file
 import pyecma376_2
-from .xml.xml_serialization import write_aas_xml_file
+import aas_core3.jsonization as aas_jsonization
+from lxml import etree
+import aas_core3.xmlization as aas_xmlization
+
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +54,16 @@ RELATIONSHIP_TYPE_AAS_SUPL = "http://admin-shell.io/aasx/relationships/aas-suppl
 # id_type = model.Identifiable.__annotations__["id"]  using this we can refer to the type_hint of "id" of the class
 #                                                    Identifiable. Doing this leads to problems with mypy...
 id_type = str
+
+# type aliases for path-like objects and IO
+# used by write_aas_xml_file, read_aas_xml_file, write_aas_json_file, read_aas_json_file
+Path = Union[str, bytes, os.PathLike]
+PathOrBinaryIO = Union[Path, BinaryIO]
+PathOrIO = Union[Path, IO]  # IO is TextIO or BinaryIO
+
+# XML Namespace definition
+XML_NS_MAP = {"aas": "https://admin-shell.io/aas/3/0"}
+XML_NS_AAS = "{" + XML_NS_MAP["aas"] + "}"
 
 
 class AASXReader:
@@ -875,3 +888,384 @@ class DictSupplementaryFileContainer(AbstractSupplementaryFileContainer):
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._name_map)
+
+
+T = TypeVar('T')
+
+
+def _get_ts(dct: Dict[str, object], key: str, type_: Type[T]) -> T:
+    """
+    Helper function for getting an item from a (str→object) dict in a typesafe way.
+
+    The type of the object is checked at runtime and a TypeError is raised, if the object has not the expected type.
+
+    :param dct: The dict
+    :param key: The key of the item to retrieve
+    :param type_: The expected type of the item
+    :return: The item
+    :raises TypeError: If the item has an unexpected type
+    :raises KeyError: If the key is not found in the dict (just as usual)
+    """
+    val = dct[key]
+    if not isinstance(val, type_):
+        raise TypeError("Dict entry '{}' has unexpected type {}".format(key, type(val).__name__))
+    return val
+
+
+def read_aas_json_file_into(object_store: ObjectStore, file: PathOrIO, replace_existing: bool = False,
+                            ignore_existing: bool = False) -> Set[str]:
+    """
+    Read an Asset Administration Shell JSON file according to 'Details of the Asset Administration Shell', chapter 5.5
+    into a given object store.
+
+    :param object_store: The :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>` in which the
+                         identifiable objects should be stored
+    :param file: A filename or file-like object to read the JSON-serialized data from
+    :param replace_existing: Whether to replace existing objects with the same identifier in the object store or not
+    :param ignore_existing: Whether to ignore existing objects (e.g. log a message) or raise an error.
+                            This parameter is ignored if replace_existing is ``True``.
+    :raises KeyError: Encountered a duplicate identifier
+    :raises KeyError: Encountered an identifier that already exists in the given ``object_store`` with both
+                     ``replace_existing`` and ``ignore_existing`` set to ``False``
+    :raises TypeError: **Non-failsafe**: Encountered an element in the wrong list
+                                         (e.g. an AssetAdministrationShell in ``submodels``)
+    :return: A set of :class:`Identifiers <basyx.aas.model.base.Identifier>` that were added to object_store
+    """
+    ret: Set[str] = set()
+
+    # json.load() accepts TextIO and BinaryIO
+    cm: ContextManager[IO]
+    if isinstance(file, get_args(Path)):
+        # 'file' is a path, needs to be opened first
+        cm = open(file, "r", encoding="utf-8-sig")
+    else:
+        # 'file' is not a path, thus it must already be IO
+        # mypy seems to have issues narrowing the type due to get_args()
+        cm = contextlib.nullcontext(file)  # type: ignore[arg-type]
+
+    # read, parse and convert JSON file
+    with cm as fp:
+        data = json.load(fp)
+
+    for name, expected_type in (('assetAdministrationShells', model.AssetAdministrationShell),
+                                ('submodels', model.Submodel),
+                                ('conceptDescriptions', model.ConceptDescription)):
+        try:
+            lst = _get_ts(data, name, list)
+        except (KeyError, TypeError):
+            continue
+
+        for item in lst:
+            identifiable = aas_jsonization.identifiable_from_jsonable(item)
+            if identifiable.id in ret:
+                error_message = f"{item} has a duplicate identifier already parsed in the document!"
+                raise KeyError(error_message)
+            existing_element = object_store.get(identifiable.id)
+            if existing_element is not None:
+                if not replace_existing:
+                    error_message = f"object with identifier {identifiable.id} already exists " \
+                                    f"in the object store: {existing_element}!"
+                    if not ignore_existing:
+                        raise KeyError(error_message + f" failed to insert {identifiable}!")
+                object_store.discard(existing_element)
+            object_store.add(identifiable)
+            ret.add(identifiable.id)
+
+    return ret
+
+
+def read_aas_json_file(file, **kwargs) -> ObjectStore[model.Identifiable]:
+    """
+    A wrapper of :meth:`~basyx.adapter.json.json_deserialization.read_aas_json_file_into`, that reads all objects
+    in an empty :class:`~basyx.model.provider.DictObjectStore`. This function supports the same keyword arguments as
+    :meth:`~basyx.adapter.json.json_deserialization.read_aas_json_file_into`.
+
+    :param file: A filename or file-like object to read the JSON-serialized data from
+    :param kwargs: Keyword arguments passed to :meth:`read_aas_json_file_into`
+    :raises KeyError: Encountered a duplicate identifier
+    :return: A :class:`~basyx.ObjectStore` containing all AAS objects from the JSON file
+    """
+    obj_store: ObjectStore[model.Identifiable] = ObjectStore()
+    read_aas_json_file_into(obj_store, file, **kwargs)
+    return obj_store
+
+
+def _create_dict(data: ObjectStore) -> dict:
+    # separate different kind of objects
+    asset_administration_shells: List = []
+    submodels: List = []
+    concept_descriptions: List = []
+    for obj in data:
+        if isinstance(obj, model.AssetAdministrationShell):
+            asset_administration_shells.append(aas_jsonization.to_jsonable(obj))
+        elif isinstance(obj, model.Submodel):
+            submodels.append(aas_jsonization.to_jsonable(obj))
+        elif isinstance(obj, model.ConceptDescription):
+            concept_descriptions.append(aas_jsonization.to_jsonable(obj))
+    dict_: Dict[str, List] = {}
+    if asset_administration_shells:
+        dict_['assetAdministrationShells'] = asset_administration_shells
+    if submodels:
+        dict_['submodels'] = submodels
+    if concept_descriptions:
+        dict_['conceptDescriptions'] = concept_descriptions
+    return dict_
+
+
+class _DetachingTextIOWrapper(io.TextIOWrapper):
+    """
+    Like :class:`io.TextIOWrapper`, but detaches on context exit instead of closing the wrapped buffer.
+    """
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.detach()
+
+
+def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
+    """
+    Write a set of AAS objects to an Asset Administration Shell JSON file according to 'Details of the Asset
+    Administration Shell', chapter 5.5
+
+    :param file: A filename or file-like object to write the JSON-serialized data to
+    :param data: :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>` which contains different objects of
+                 the AAS meta model which should be serialized to a JSON file
+    :param kwargs: Additional keyword arguments to be passed to `json.dump()`
+    """
+
+    # json.dump() only accepts TextIO
+    cm: ContextManager[TextIO]
+    if isinstance(file, get_args(Path)):
+        # 'file' is a path, needs to be opened first
+        cm = open(file, "w", encoding="utf-8")
+    elif not hasattr(file, "encoding"):
+        # only TextIO has this attribute, so this must be BinaryIO, which needs to be wrapped
+        # mypy seems to have issues narrowing the type due to get_args()
+        cm = _DetachingTextIOWrapper(file, "utf-8", write_through=True)  # type: ignore[arg-type]
+    else:
+        # we already got TextIO, nothing needs to be done
+        # mypy seems to have issues narrowing the type due to get_args()
+        cm = contextlib.nullcontext(file)  # type: ignore[arg-type]
+    # serialize object to json#
+
+    with cm as fp:
+        json.dump(_create_dict(data), fp, **kwargs)
+
+
+NS_AAS = XML_NS_AAS
+
+
+def _write_element(file: PathOrBinaryIO, element: etree._Element, **kwargs) -> None:
+    etree.ElementTree(element).write(file, encoding="UTF-8", xml_declaration=True, method="xml", **kwargs)
+
+
+def object_store_to_xml_element(data: ObjectStore) -> etree._Element:
+    """
+    Serialize a set of AAS objects to an Asset Administration Shell as :class:`~lxml.etree._Element`.
+    This function is used internally by :meth:`write_aas_xml_file` and shouldn't be
+    called directly for most use-cases.
+
+    :param data: :class:`ObjectStore <basyx.ObjectStore>` which contains different objects of
+                 the AAS meta model which should be serialized to an XML file
+    """
+    # separate different kind of objects
+    asset_administration_shells = []
+    submodels = []
+    concept_descriptions = []
+    for obj in data:
+        if isinstance(obj, model.AssetAdministrationShell):
+            asset_administration_shells.append(obj)
+        elif isinstance(obj, model.Submodel):
+            submodels.append(obj)
+        elif isinstance(obj, model.ConceptDescription):
+            concept_descriptions.append(obj)
+
+    # serialize objects to XML
+    root = etree.Element(NS_AAS + "environment", nsmap=XML_NS_MAP)
+    if asset_administration_shells:
+        et_asset_administration_shells = etree.Element(NS_AAS + "assetAdministrationShells")
+        for aas_obj in asset_administration_shells:
+            et_asset_administration_shells.append(
+                etree.fromstring(aas_xmlization.to_str(aas_obj)))
+        root.append(et_asset_administration_shells)
+    if submodels:
+        et_submodels = etree.Element(NS_AAS + "submodels")
+        for sub_obj in submodels:
+            et_submodels.append(etree.fromstring(aas_xmlization.to_str(sub_obj)))
+        root.append(et_submodels)
+    if concept_descriptions:
+        et_concept_descriptions = etree.Element(NS_AAS + "conceptDescriptions")
+        for con_obj in concept_descriptions:
+            et_concept_descriptions.append(etree.fromstring(aas_xmlization.to_str(con_obj)))
+        root.append(et_concept_descriptions)
+    return root
+
+
+def write_aas_xml_file(file: PathOrBinaryIO,
+                       data: ObjectStore,
+                       **kwargs) -> None:
+    """
+    Write a set of AAS objects to an Asset Administration Shell XML file according to 'Details of the Asset
+    Administration Shell', chapter 5.4
+
+    :param file: A filename or file-like object to write the XML-serialized data to
+    :param data: :class:`ObjectStore <basyx.ObjectStore>` which contains different objects of
+                 the AAS meta model which should be serialized to an XML file
+    :param kwargs: Additional keyword arguments to be passed to :meth:`~lxml.etree._ElementTree.write`
+    """
+    return _write_element(file, object_store_to_xml_element(data), **kwargs)
+
+
+REQUIRED_NAMESPACES: Set[str] = {XML_NS_MAP["aas"]}
+
+
+RE = TypeVar("RE", bound=model.RelationshipElement)
+
+
+def _element_pretty_identifier(element: etree._Element) -> str:
+    """
+    Returns a pretty element identifier for a given XML element.
+
+    If the prefix is known, the namespace in the element tag is replaced by the prefix.
+    If additionally also the sourceline is known, it is added as a suffix to name.
+    For example, instead of "{https://admin-shell.io/aas/3/0}assetAdministrationShell" this function would return
+    "aas:assetAdministrationShell on line $line", if both, prefix and sourceline, are known.
+
+    :param element: The xml element.
+    :return: The pretty element identifier.
+    """
+    identifier = element.tag
+    if element.prefix is not None:
+        # Only replace the namespace by the prefix if it matches our known namespaces,
+        # so the replacement by the prefix doesn't mask errors such as incorrect namespaces.
+        namespace, tag = element.tag.split("}", 1)
+        if namespace[1:] in XML_NS_MAP.values():
+            identifier = element.prefix + ":" + tag
+    if element.sourceline is not None:
+        identifier += f" on line {element.sourceline}"
+    return identifier
+
+
+def _parse_xml_document(file: PathOrIO, failsafe: bool = True, **parser_kwargs: Any) -> Optional[etree._Element]:
+    """
+    Parse an XML document into an element tree
+
+    :param file: A filename or file-like object to read the XML-serialized data from
+    :param failsafe: If True, the file is parsed in a failsafe way: Instead of raising an Exception if the document
+                     is malformed, parsing is aborted, an error is logged and None is returned
+    :param parser_kwargs: Keyword arguments passed to the XMLParser constructor
+    :raises ~lxml.etree.XMLSyntaxError: If the given file(-handle) has invalid XML
+    :raises KeyError: If a required namespace has not been declared on the XML document
+    :return: The root element of the element tree
+    """
+
+    parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, **parser_kwargs)
+
+    try:
+        root = etree.parse(file, parser).getroot()
+    except etree.XMLSyntaxError as e:
+        if failsafe:
+            logger.error(e)
+            return None
+        raise e
+
+    missing_namespaces: Set[str] = REQUIRED_NAMESPACES - set(root.nsmap.values())
+    if missing_namespaces:
+        error_message = f"The following required namespaces are not declared: {' | '.join(missing_namespaces)}" \
+                        + " - Is the input document of an older version?"
+        if not failsafe:
+            raise KeyError(error_message)
+        logger.error(error_message)
+    return root
+
+
+def read_aas_xml_file_into(object_store: ObjectStore, file: PathOrIO,
+                           replace_existing: bool = False, ignore_existing: bool = False,
+                           **parser_kwargs: Any) -> Set[str]:
+    """
+    Read an Asset Administration Shell XML file according to 'Details of the Asset Administration Shell', chapter 5.4
+    into a given :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>`.
+
+    :param object_store: The :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>` in which the
+                         :class:`~basyx.aas.model.base.Identifiable` objects should be stored
+    :param file: A filename or file-like object to read the XML-serialized data from
+    :param replace_existing: Whether to replace existing objects with the same identifier in the object store or not
+    :param ignore_existing: Whether to ignore existing objects (e.g. log a message) or raise an error.
+                            This parameter is ignored if replace_existing is True.
+    :param parser_kwargs: Keyword arguments passed to the XMLParser constructor
+    :raises ~lxml.etree.XMLSyntaxError: If the given file(-handle) has invalid XML
+    :raises KeyError: If a required namespace has not been declared on the XML document
+    :raises KeyError: Encountered a duplicate identifier
+    :raises KeyError: Encountered an identifier that already exists in the given ``object_store`` with both
+                     ``replace_existing`` and ``ignore_existing`` set to ``False``
+    :raises (~basyx.aas.model.base.AASConstraintViolation, KeyError, ValueError): Errors during
+                                                                                  construction of the objects
+    :raises TypeError: Encountered an undefined top-level list (e.g. ``<aas:submodels1>``)
+    :return: A set of :class:`Identifiers <basyx.aas.model.base.Identifier>` that were added to object_store
+    """
+    ret: Set = set()
+
+    element_constructors: Dict[str, Callable[..., model.Identifiable]] = {
+        "assetAdministrationShell": aas_xmlization.asset_administration_shell_from_str,
+        "conceptDescription": aas_xmlization.concept_description_from_str,
+        "submodel": aas_xmlization.submodel_from_str
+    }
+
+    element_constructors = {NS_AAS + k: v for k, v in element_constructors.items()}
+    parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, **parser_kwargs)
+
+    root = etree.parse(file, parser).getroot()
+
+    if root is None:
+        return ret
+    # Add AAS objects to ObjectStore
+    for list_ in root:
+
+        element_tag = list_.tag[:-1]
+        if list_.tag[-1] != "s" or element_tag not in element_constructors:
+            error_message = f"Unexpected top-level list {_element_pretty_identifier(list_)}!"
+
+            logger.warning(error_message)
+            continue
+
+        for element in list_:
+            str = etree.tostring(element).decode("utf-8-sig")
+            identifiable = element_constructors[element_tag](str)
+
+            if identifiable.id in ret:
+                error_message = f"{element} has a duplicate identifier already parsed in the document!"
+                raise KeyError(error_message)
+            existing_element = object_store.get(identifiable.id)
+            if existing_element is not None:
+                if not replace_existing:
+                    error_message = f"object with identifier {identifiable.id} already exists " \
+                                    f"in the object store: {existing_element}!"
+                    if not ignore_existing:
+                        raise KeyError(error_message + f" failed to insert {identifiable}!")
+                    logger.info(error_message + f" skipping insertion of {identifiable}...")
+                    continue
+                object_store.discard(existing_element)
+            object_store.add(identifiable)
+            ret.add(identifiable.id)
+
+    return ret
+
+
+def read_aas_xml_file(file: PathOrIO, **kwargs: Any) -> ObjectStore[model.Identifiable]:
+    """
+    A wrapper of :meth:`~basyx.adapter.xml.xml_deserialization.read_aas_xml_file_into`, that reads all objects in an
+    empty :class:`~basyx.ObjectStore`. This function supports
+    the same keyword arguments as :meth:`~basyx.adapter.xml.xml_deserialization.read_aas_xml_file_into`.
+
+    :param file: A filename or file-like object to read the XML-serialized data from
+    :param kwargs: Keyword arguments passed to :meth:`~basyx.aas.adapter.xml.xml_deserialization.read_aas_xml_file_into`
+    :raises ~lxml.etree.XMLSyntaxError: If the given file(-handle) has invalid XML
+    :raises KeyError: If a required namespace has not been declared on the XML document
+    :raises KeyError: Encountered a duplicate identifier
+    :raises (~basyx.aas.model.base.AASConstraintViolation, KeyError, ValueError): Errors during
+                                                                                  construction of the objects
+    :raises TypeError: Encountered an undefined top-level list (e.g. ``<aas:submodels1>``)
+    :return: A :class:`~basyx.ObjectStore` containing all AAS objects from the XML file
+    """
+    obj_store: ObjectStore[model.Identifiable] = ObjectStore()
+    read_aas_xml_file_into(obj_store, file, **kwargs)
+    return obj_store
