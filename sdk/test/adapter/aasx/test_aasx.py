@@ -30,7 +30,8 @@ class TestAASXUtils(unittest.TestCase):
 
     def test_supplementary_file_container(self) -> None:
         container = aasx.DictSupplementaryFileContainer()
-        with open(Path(__file__).parent.parent.parent.parent/ 'basyx' / 'tutorial' / 'data' / 'TestFile.pdf', 'rb') as f:
+        with open(Path(__file__).parent.parent.parent.parent / 'basyx' / 'tutorial' /
+                  'data' / 'TestFile.pdf', 'rb') as f:
             new_name = container.add_file("/TestFile.pdf", f, "application/pdf")
             # Name should not be modified, since there is no conflict
             self.assertEqual("/TestFile.pdf", new_name)
@@ -79,7 +80,8 @@ class AASXWriterTest(unittest.TestCase):
         # Create example data and file_store
         data = example_aas.create_full_example()
         files = aasx.DictSupplementaryFileContainer()
-        with open(Path(__file__).parent.parent.parent.parent/ 'basyx' / 'tutorial' / 'data' / 'TestFile.pdf', 'rb') as f:
+        with open(Path(__file__).parent.parent.parent.parent / 'basyx' /
+                  'tutorial' / 'data' / 'TestFile.pdf', 'rb') as f:
             files.add_file("/aasx/suppl/MyExampleFile.pdf", f, "application/pdf")
             f.seek(0)
 

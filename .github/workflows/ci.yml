@@ -51,6 +51,7 @@ jobs:
         pip install pycodestyle mypy
         cd ./sdk
         pip install .
+        python -m pip install lxml-stubs
     - name: Check typing with MyPy
       run: |
         mypy sdk --exclude sdk/build

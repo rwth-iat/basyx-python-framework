@@ -331,7 +331,7 @@ class AASXWriter:
         p.close()
 
     def write_aas(self,
-                  aas_ids: list[id_type],
+                  aas_ids: List[id_type],
                   object_store: ObjectStore,
                   file_store: "AbstractSupplementaryFileContainer",
                   write_json: bool = False) -> None:
