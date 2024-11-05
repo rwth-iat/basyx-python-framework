@@ -139,7 +139,6 @@ def read_aas_xml_file_into(object_store: ObjectStore, file: PathOrIO,
 
     root = etree.parse(file, parser).getroot()
 
-
     if root is None:
         return ret
     # Add AAS objects to ObjectStore

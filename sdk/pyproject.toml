@@ -14,3 +14,7 @@ authors = [
 description="The Eclipse BaSyx Python SDK, an implementation of the Asset Administration Shell for Industry 4.0 systems"
 readme = "README.md"
 license = {file = "./LICENSE"}
+
+[tool.setuptools]
+packages = ["basyx"]
+py-modules = ['basyx']

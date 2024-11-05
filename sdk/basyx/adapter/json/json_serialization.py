@@ -27,7 +27,6 @@ from .. import _generic
 import os
 from typing import BinaryIO, Dict, IO, Type, Union
 
-
 Path = Union[str, bytes, os.PathLike]
 PathOrBinaryIO = Union[Path, BinaryIO]
 PathOrIO = Union[Path, IO]  # IO is TextIO or BinaryIO
@@ -54,12 +53,15 @@ def _create_dict(data: ObjectStore) -> dict:
         dict_['conceptDescriptions'] = concept_descriptions
     return dict_
 
+
 class _DetachingTextIOWrapper(io.TextIOWrapper):
     """
     Like :class:`io.TextIOWrapper`, but detaches on context exit instead of closing the wrapped buffer.
     """
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.detach()
+
 
 def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
     """
@@ -89,5 +91,3 @@ def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
 
     with cm as fp:
         json.dump(_create_dict(data), fp, **kwargs)
-
-

@@ -31,6 +31,7 @@ import os
 import re
 from typing import Dict, Tuple, IO, Union, List, Set, Optional, Iterable, Iterator
 
+from aas_core3.types import HasSemantics
 from basyx.object_store import ObjectStore
 from aas_core3 import types as model
 from .json.json_serialization import write_aas_json_file
@@ -47,9 +48,10 @@ RELATIONSHIP_TYPE_AAS_SPEC = "http://admin-shell.io/aasx/relationships/aas-spec"
 RELATIONSHIP_TYPE_AAS_SPEC_SPLIT = "http://admin-shell.io/aasx/relationships/aas-spec-split"
 RELATIONSHIP_TYPE_AAS_SUPL = "http://admin-shell.io/aasx/relationships/aas-suppl"
 
-
-#id_type = model.Identifiable.__annotations__["id"]
+# id_type = model.Identifiable.__annotations__["id"]  using this we can refer to the type_hint of "id" of the class
+#                                                    Identifiable. Doing this leads to problems with mypy...
 id_type = str
+
 
 class AASXReader:
     """
@@ -155,14 +157,12 @@ class AASXReader:
         read_identifiables: Set[id_type] = set()
 
         # Iterate AAS files
-        for aas_part in self.reader.get_related_parts_by_type(aasx_origin_part)[
-            RELATIONSHIP_TYPE_AAS_SPEC]:
+        for aas_part in self.reader.get_related_parts_by_type(aasx_origin_part)[RELATIONSHIP_TYPE_AAS_SPEC]:
             self._read_aas_part_into(aas_part, object_store, file_store,
                                      read_identifiables, override_existing, **kwargs)
 
             # Iterate split parts of AAS file
-            for split_part in self.reader.get_related_parts_by_type(aas_part)[
-                RELATIONSHIP_TYPE_AAS_SPEC_SPLIT]:
+            for split_part in self.reader.get_related_parts_by_type(aas_part)[RELATIONSHIP_TYPE_AAS_SPEC_SPLIT]:
                 self._read_aas_part_into(split_part, object_store, file_store,
                                          read_identifiables, override_existing, **kwargs)
 
@@ -331,7 +331,7 @@ class AASXWriter:
         p.close()
 
     def write_aas(self,
-                  aas_ids: Union[id_type],
+                  aas_ids: list[id_type],
                   object_store: ObjectStore,
                   file_store: "AbstractSupplementaryFileContainer",
                   write_json: bool = False) -> None:
@@ -376,7 +376,6 @@ class AASXWriter:
             Identifiable object)
         """
 
-
         objects_to_be_written: ObjectStore[model.Identifiable] = ObjectStore()
         for aas_id in aas_ids:
             try:
@@ -413,12 +412,13 @@ class AASXWriter:
         concept_descriptions: List[model.ConceptDescription] = []
         for identifiable in objects_to_be_written:
             for element in identifiable.descend():
-                try:
+                if isinstance(element, HasSemantics):
+
                     semantic_id = element.semantic_id
-                    cd = object_store.get_identifiable(semantic_id)
-                    concept_descriptions.append(cd)
-                except Exception:
-                    continue
+                    if semantic_id is not None:
+                        for key in semantic_id.keys:
+                            cd = object_store.get_identifiable(key.value)
+                            concept_descriptions.append(cd)
 
         for element in concept_descriptions:
             objects_to_be_written.add(element)
