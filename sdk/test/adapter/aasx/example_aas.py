@@ -1,7 +1,7 @@
 from aas_core3 import types as model
 from basyx.object_store import ObjectStore
 import aas_core3.types as aas_types
-from basyx.adapter.aasx import DictSupplementaryFileContainer
+from basyx.aasx import DictSupplementaryFileContainer
 from pathlib import Path
 
 

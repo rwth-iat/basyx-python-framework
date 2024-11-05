@@ -15,7 +15,7 @@ from pathlib import Path  # Used for easier handling of auxiliary file's local p
 
 import pyecma376_2
 from aas_core3 import types as model
-from basyx.adapter import aasx
+from basyx import aasx
 from . import example_aas
 from basyx.object_store import ObjectStore
 
