@@ -4,22 +4,7 @@ import aas_core3.jsonization as aas_jsonization
 from basyx.object_store import ObjectStore
 from basyx.aasx import AASXWriter, AASXReader, DictSupplementaryFileContainer
 import pyecma376_2  # The base library for Open Packaging Specifications. We will use the OPCCoreProperties class.
-import datetimedocs:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ env.X_PYTHON_VERSION }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ env.X_PYTHON_VERSION }}
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r docs/docs-requirements.txt
-    - name: Check documentation for errors
-      run: |
-        SPHINXOPTS="-a -E -n -W --keep-going" make -C docs html
+import datetime
 from pathlib import Path  # Used for easier handling of auxiliary file's local path
 
 Referencetype = aas_types.ReferenceTypes("ModelReference")
