@@ -16,8 +16,11 @@ from pathlib import Path  # Used for easier handling of auxiliary file's local p
 import pyecma376_2
 from aas_core3 import types as model
 from basyx import aasx
+
 from . import example_aas
 from basyx.object_store import ObjectStore
+
+from .example_aas import create_full_example
 
 
 class TestAASXUtils(unittest.TestCase):
@@ -30,7 +33,7 @@ class TestAASXUtils(unittest.TestCase):
 
     def test_supplementary_file_container(self) -> None:
         container = aasx.DictSupplementaryFileContainer()
-        with open(Path(__file__).parent.parent.parent.parent / 'basyx' / 'tutorial' /
+        with open(Path(__file__).parent.parent / 'basyx' / 'tutorial' /
                   'data' / 'TestFile.pdf', 'rb') as f:
             new_name = container.add_file("/TestFile.pdf", f, "application/pdf")
             # Name should not be modified, since there is no conflict
@@ -80,7 +83,7 @@ class AASXWriterTest(unittest.TestCase):
         # Create example data and file_store
         data = example_aas.create_full_example()
         files = aasx.DictSupplementaryFileContainer()
-        with open(Path(__file__).parent.parent.parent.parent / 'basyx' /
+        with open(Path(__file__).parent.parent / 'basyx' /
                   'tutorial' / 'data' / 'TestFile.pdf', 'rb') as f:
             files.add_file("/aasx/suppl/MyExampleFile.pdf", f, "application/pdf")
             f.seek(0)
@@ -132,4 +135,28 @@ class AASXWriterTest(unittest.TestCase):
                 self.assertEqual(hashlib.sha1(file_content.getvalue()).hexdigest(),
                                  "78450a66f59d74c073bf6858db340090ea72a8b1")
 
+                # Override read objects
+                with aasx.AASXReader(filename) as reader:
+                    reader.read_into(new_data, new_files, replace_existing=True)
+                    new_cp = reader.get_core_properties()
+
+                # Reload objects while expected to skipp all
+                with self.assertLogs(level='INFO') as log:
+                    with aasx.AASXReader(filename) as reader:
+                        reader.read_into(new_data, new_files)
+                        new_cp = reader.get_core_properties()
+                    assert isinstance(log.output, list)  # This should be True due to the record=True parameter
+                    self.assertEqual(len(log.output), 2)
+
                 os.unlink(filename)
+
+        # Test AASXReader exceptions
+        new_data_2: ObjectStore[model.Identifiable] = ObjectStore()
+        new_files = aasx.DictSupplementaryFileContainer()
+        with self.assertRaises(FileNotFoundError):
+            with aasx.AASXReader("/Non_existing_dir") as reader:
+                reader.read_into(new_data_2, new_files)
+        with self.assertRaises(Exception):
+            with open(Path(__file__).parent / "./__init__.py") as f:
+                with aasx.AASXReader(f) as reader:
+                    pass

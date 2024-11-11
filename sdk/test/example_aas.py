@@ -34,7 +34,7 @@ def create_full_example() -> ObjectStore:
     )
     file_store = DictSupplementaryFileContainer()
 
-    with open(Path(__file__).parent.parent.parent.parent / 'basyx' / 'tutorial' / 'data' / 'TestFile.pdf', 'rb') as f:
+    with open(Path(__file__).parent.parent / 'basyx' / 'tutorial' / 'data' / 'TestFile.pdf', 'rb') as f:
         actual_file_name = file_store.add_file("/aasx/suppl/MyExampleFile.pdf", f, "application/pdf")
 
     if submodel.submodel_elements is not None:
