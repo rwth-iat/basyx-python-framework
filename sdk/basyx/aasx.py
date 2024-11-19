@@ -7,9 +7,8 @@
 """
 .. _adapter.aasx:
 
-Functionality for reading and writing AASX files according to "Details of the Asset Administration Shell Part 1 V2.0",
-section 7.
-
+Functionality for reading and writing AASX files according to "Specification of the Asset Administration Shell Part 5:
+Package File Format (AASX) v3.0".
 The AASX file format is built upon the Open Packaging Conventions (OPC; ECMA 376-2). We use the ``pyecma376_2`` library
 for low level OPC reading and writing. It currently supports all required features except for embedded digital
 signatures.
@@ -51,9 +50,6 @@ RELATIONSHIP_TYPE_AAS_SPEC = "http://admin-shell.io/aasx/relationships/aas-spec"
 RELATIONSHIP_TYPE_AAS_SPEC_SPLIT = "http://admin-shell.io/aasx/relationships/aas-spec-split"
 RELATIONSHIP_TYPE_AAS_SUPL = "http://admin-shell.io/aasx/relationships/aas-suppl"
 
-# id_type = model.Identifiable.__annotations__["id"]  using this we can refer to the type_hint of "id" of the class
-#                                                    Identifiable. Doing this leads to problems with mypy...
-id_type = str
 
 # type aliases for path-like objects and IO
 # used by write_aas_xml_file, read_aas_xml_file, write_aas_json_file, read_aas_json_file
@@ -66,10 +62,11 @@ XML_NS_MAP = {"aas": "https://admin-shell.io/aas/3/0"}
 XML_NS_AAS = "{" + XML_NS_MAP["aas"] + "}"
 NS_AAS = XML_NS_AAS
 
-
+# type aliases
 REQUIRED_NAMESPACES: Set[str] = {XML_NS_MAP["aas"]}
 RE = TypeVar("RE", bound=model.RelationshipElement)
 T = TypeVar('T')
+id_type = str
 
 
 class AASXReader:
@@ -447,64 +444,9 @@ class AASXWriter:
         self.write_all_aas_objects("/aasx/data.{}".format("json" if write_json else "xml"),
                                    objects_to_be_written, file_store, write_json)
 
-    # TODO remove `method` parameter in future version.
-    #   Not actually required since you can always create a local dict
-    def write_aas_objects(self,
-                          part_name: str,
-                          object_ids: Iterable[id_type],
-                          object_store: ObjectStore,
-                          file_store: "AbstractSupplementaryFileContainer",
-                          write_json: bool = False,
-                          split_part: bool = False,
-                          additional_relationships: Iterable[pyecma376_2.OPCRelationship] = ()) -> None:
-        """
-        A thin wrapper around :meth:`write_all_aas_objects` to ensure downwards compatibility
-
-        This method takes the AAS's :class:`~aas_core3.types.Identifiable.id` (as ``aas_id``) to retrieve it
-        from the given object_store. If the list of written objects includes :class:`~aas_core3.types.Submodel`
-        objects, Supplementary files which are referenced by :class:`~aas_core3.types.File` objects within
-        those submodels, are also added to the AASX package.
-
-        .. attention::
-
-            You must make sure to call this method or :meth:`write_all_aas_objects` only once per unique ``part_name``
-            on a single package instance.
-
-        :param part_name: Name of the Part within the AASX package to write the files to. Must be a valid ECMA376-2
-            part name and unique within the package. The extension of the part should match the data format (i.e.
-            '.json' if ``write_json`` else '.xml').
-        :param object_ids: A list of :class:`Identifiers <aas_core3.types.Identifiable.id>` of the objects to be written
-            to the AASX package. Only these :class:`~aas_core3.types.Identifiable.id` objects (and included
-            :class:`~aas_core3.types.Referable` objects) are written to the package.
-        :param object_store: The objects store to retrieve the :class:`~aas_core3.types.Identifiable` objects from
-        :param file_store: The
-            :class:`SupplementaryFileContainer <basyx.adapter.aasx.AbstractSupplementaryFileContainer>`
-            to retrieve supplementary files from (if there are any :class:`~aas_core3.types.File`
-            objects within the written objects.
-        :param write_json: If ``True``, the part is written as a JSON file instead of an XML file. Defaults to
-            ``False``.
-        :param split_part: If ``True``, no aas-spec relationship is added from the aasx-origin to this part. You must
-            make sure to reference it via a aas-spec-split relationship from another aas-spec part
-        :param additional_relationships: Optional OPC/ECMA376 relationships which should originate at the AAS object
-            part to be written, in addition to the aas-suppl relationships which are created automatically.
-        """
-        logger.debug("Writing AASX part {} with AAS objects ...".format(part_name))
-
-        objects: ObjectStore[model.Identifiable] = ObjectStore()
-
-        # Retrieve objects and scan for referenced supplementary files
-        for identifier in object_ids:
-            try:
-                the_object = object_store.get_identifiable(identifier)
-            except KeyError:
-                logger.error("Could not find object {} in ObjectStore".format(identifier))
-                continue
-            objects.add(the_object)
-
-        self.write_all_aas_objects(part_name, objects, file_store, write_json, split_part, additional_relationships)
-
     # TODO remove `split_part` parameter in future version.
     #   Not required anymore since changes from DotAAS version 2.0.1 to 3.0RC01
+
     def write_all_aas_objects(self,
                               part_name: str,
                               objects: ObjectStore,
@@ -689,56 +631,6 @@ class AASXWriter:
         self.writer.write_relationships(package_relationships)
 
 
-# TODO remove in future version.
-#   Not required anymore since changes from DotAAS version 2.0.1 to 3.0RC01
-class NameFriendlyfier:
-    """
-    A simple helper class to create unique "AAS friendly names" according to DotAAS, section 7.6.
-
-    Objects of this class store the already created friendly names to avoid name collisions within one set of names.
-    """
-    RE_NON_ALPHANUMERICAL = re.compile(r"[^a-zA-Z0-9]")
-
-    def __init__(self) -> None:
-        self.issued_names: Set[str] = set()
-
-    def get_friendly_name(self, identifier: str):
-        """
-        Generate a friendly name from an AAS identifier.
-
-        TODO: This information is outdated. The whole class is no longer needed.
-
-        According to section 7.6 of "Details of the Asset Administration Shell", all non-alphanumerical characters are
-        replaced with underscores. We also replace all non-ASCII characters to generate valid URIs as the result.
-        If this replacement results in a collision with a previously generated friendly name of this NameFriendlifier,
-        a number is appended with underscore to the friendly name.
-
-        Example:
-
-        .. code-block:: python
-
-            friendlyfier = NameFriendlyfier()
-            friendlyfier.get_friendly_name("http://example.com/AAS-a")
-             > "http___example_com_AAS_a"
-
-            friendlyfier.get_friendly_name("http://example.com/AAS+a")
-             >  "http___example_com_AAS_a_1"
-
-        """
-        # friendlify name
-        raw_name = self.RE_NON_ALPHANUMERICAL.sub('_', identifier)
-
-        # Unify name (avoid collisions)
-        amended_name = raw_name
-        i = 1
-        while amended_name in self.issued_names:
-            amended_name = "{}_{}".format(raw_name, i)
-            i += 1
-
-        self.issued_names.add(amended_name)
-        return amended_name
-
-
 class AbstractSupplementaryFileContainer(metaclass=abc.ABCMeta):
     """
     Abstract interface for containers of supplementary files for AASs.
@@ -897,32 +789,12 @@ class DictSupplementaryFileContainer(AbstractSupplementaryFileContainer):
         return iter(self._name_map)
 
 
-def _get_ts(dct: Dict[str, object], key: str, type_: Type[T]) -> T:
-    """
-    Helper function for getting an item from a (str→object) dict in a typesafe way.
-
-    The type of the object is checked at runtime and a TypeError is raised, if the object has not the expected type.
-
-    :param dct: The dict
-    :param key: The key of the item to retrieve
-    :param type_: The expected type of the item
-    :return: The item
-    :raises TypeError: If the item has an unexpected type
-    :raises KeyError: If the key is not found in the dict (just as usual)
-    """
-    val = dct[key]
-    if not isinstance(val, type_):
-        raise TypeError("Dict entry '{}' has unexpected type {}".format(key, type(val).__name__))
-    return val
-
-
 def read_aas_json_file(file: PathOrIO) -> ObjectStore[model.Identifiable]:
     """
     Read an Asset Administration Shell JSON file according to 'Details of the Asset Administration Shell', chapter 5.5
     into a given object store.
 
     :param file: A filename or file-like object to read the JSON-serialized data from
-                            This parameter is ignored if replace_existing is ``True``.
     :raises KeyError: Encountered a duplicate identifier
     :raises KeyError: Encountered an identifier that already exists in the given ``object_store`` with both
                      ``replace_existing`` and ``ignore_existing`` set to ``False``
@@ -951,7 +823,7 @@ def read_aas_json_file(file: PathOrIO) -> ObjectStore[model.Identifiable]:
                                 ('submodels', model.Submodel),
                                 ('conceptDescriptions', model.ConceptDescription)):
         try:
-            lst = _get_ts(data, name, list)
+            lst: list = data[name]
         except (KeyError, TypeError):
             continue
 
@@ -965,37 +837,6 @@ def read_aas_json_file(file: PathOrIO) -> ObjectStore[model.Identifiable]:
             ret.add(identifiable.id)
 
     return object_store
-
-
-def _create_dict(data: ObjectStore) -> dict:
-    # separate different kind of objects
-    asset_administration_shells: List = []
-    submodels: List = []
-    concept_descriptions: List = []
-    for obj in data:
-        if isinstance(obj, model.AssetAdministrationShell):
-            asset_administration_shells.append(aas_jsonization.to_jsonable(obj))
-        elif isinstance(obj, model.Submodel):
-            submodels.append(aas_jsonization.to_jsonable(obj))
-        elif isinstance(obj, model.ConceptDescription):
-            concept_descriptions.append(aas_jsonization.to_jsonable(obj))
-    dict_: Dict[str, List] = {}
-    if asset_administration_shells:
-        dict_['assetAdministrationShells'] = asset_administration_shells
-    if submodels:
-        dict_['submodels'] = submodels
-    if concept_descriptions:
-        dict_['conceptDescriptions'] = concept_descriptions
-    return dict_
-
-
-class _DetachingTextIOWrapper(io.TextIOWrapper):
-    """
-    Like :class:`io.TextIOWrapper`, but detaches on context exit instead of closing the wrapped buffer.
-    """
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.detach()
 
 
 def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
@@ -1022,77 +863,34 @@ def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
         # we already got TextIO, nothing needs to be done
         # mypy seems to have issues narrowing the type due to get_args()
         cm = contextlib.nullcontext(file)  # type: ignore[arg-type]
+
     # serialize object to json#
-
-    with cm as fp:
-        json.dump(_create_dict(data), fp, **kwargs)
-
-
-def _write_element(file: PathOrBinaryIO, element: etree._Element, **kwargs) -> None:
-    etree.ElementTree(element).write(file, encoding="UTF-8", xml_declaration=True, method="xml", **kwargs)
-
-
-def object_store_to_xml_element(data: ObjectStore) -> etree._Element:
-    """
-    Serialize a set of AAS objects to an Asset Administration Shell as :class:`~lxml.etree._Element`.
-    This function is used internally by :meth:`write_aas_xml_file` and shouldn't be
-    called directly for most use-cases.
-
-    :param data: :class:`ObjectStore <basyx.ObjectStore>` which contains different objects of
-                 the AAS meta model which should be serialized to an XML file
-    """
-    # separate different kind of objects
-    asset_administration_shells = []
-    submodels = []
-    concept_descriptions = []
+    asset_administration_shells: List = []
+    submodels: List = []
+    concept_descriptions: List = []
     for obj in data:
         if isinstance(obj, model.AssetAdministrationShell):
-            asset_administration_shells.append(obj)
+            asset_administration_shells.append(aas_jsonization.to_jsonable(obj))
         elif isinstance(obj, model.Submodel):
-            submodels.append(obj)
+            submodels.append(aas_jsonization.to_jsonable(obj))
         elif isinstance(obj, model.ConceptDescription):
-            concept_descriptions.append(obj)
-
-    # serialize objects to XML
-    root = etree.Element(NS_AAS + "environment", nsmap=XML_NS_MAP)
+            concept_descriptions.append(aas_jsonization.to_jsonable(obj))
+    dict_: Dict[str, List] = {}
     if asset_administration_shells:
-        et_asset_administration_shells = etree.Element(NS_AAS + "assetAdministrationShells")
-        for aas_obj in asset_administration_shells:
-            et_asset_administration_shells.append(
-                etree.fromstring(aas_xmlization.to_str(aas_obj)))
-        root.append(et_asset_administration_shells)
+        dict_['assetAdministrationShells'] = asset_administration_shells
     if submodels:
-        et_submodels = etree.Element(NS_AAS + "submodels")
-        for sub_obj in submodels:
-            et_submodels.append(etree.fromstring(aas_xmlization.to_str(sub_obj)))
-        root.append(et_submodels)
+        dict_['submodels'] = submodels
     if concept_descriptions:
-        et_concept_descriptions = etree.Element(NS_AAS + "conceptDescriptions")
-        for con_obj in concept_descriptions:
-            et_concept_descriptions.append(etree.fromstring(aas_xmlization.to_str(con_obj)))
-        root.append(et_concept_descriptions)
-    return root
+        dict_['conceptDescriptions'] = concept_descriptions
 
-
-def write_aas_xml_file(file: PathOrBinaryIO,
-                       data: ObjectStore,
-                       **kwargs) -> None:
-    """
-    Write a set of AAS objects to an Asset Administration Shell XML file according to 'Details of the Asset
-    Administration Shell', chapter 5.4
-
-    :param file: A filename or file-like object to write the XML-serialized data to
-    :param data: :class:`ObjectStore <basyx.ObjectStore>` which contains different objects of
-                 the AAS meta model which should be serialized to an XML file
-    :param kwargs: Additional keyword arguments to be passed to :meth:`~lxml.etree._ElementTree.write`
-    """
-    return _write_element(file, object_store_to_xml_element(data), **kwargs)
+    with cm as fp:
+        json.dump(dict_, fp, **kwargs)
 
 
 def read_aas_xml_file(file: PathOrIO, **parser_kwargs) -> ObjectStore[model.Identifiable]:
     """
-    Read an Asset Administration Shell XML file according to 'Details of the Asset Administration Shell', chapter 5.4
-    into a given :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>`.
+    Able to parse the official schema files into a given
+    :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>`.
 
     :param file: A filename or file-like object to read the XML-serialized data from
     :raises ~lxml.etree.XMLSyntaxError: If the given file(-handle) has invalid XML
@@ -1143,3 +941,55 @@ def read_aas_xml_file(file: PathOrIO, **parser_kwargs) -> ObjectStore[model.Iden
             ret.add(identifiable.id)
 
     return object_store
+
+
+def write_aas_xml_file(file: PathOrIO, data: ObjectStore) -> None:
+    """
+    Serialize a set of AAS objects to an Asset Administration Shell as :class:`~lxml.etree._Element`.
+    This function is used internally by :meth:`write_aas_xml_file` and shouldn't be
+    called directly for most use-cases.
+
+    :param file: A filename or file-like object to read the JSON-serialized data from
+    :param data: :class:`ObjectStore <basyx.ObjectStore>` which contains different objects of
+                 the AAS meta model which should be serialized to an XML file
+    """
+    # separate different kind of objects
+    asset_administration_shells = []
+    submodels = []
+    concept_descriptions = []
+    for obj in data:
+        if isinstance(obj, model.AssetAdministrationShell):
+            asset_administration_shells.append(obj)
+        elif isinstance(obj, model.Submodel):
+            submodels.append(obj)
+        elif isinstance(obj, model.ConceptDescription):
+            concept_descriptions.append(obj)
+
+    # serialize objects to XML
+    root = etree.Element(NS_AAS + "environment", nsmap=XML_NS_MAP)
+    if asset_administration_shells:
+        et_asset_administration_shells = etree.Element(NS_AAS + "assetAdministrationShells")
+        for aas_obj in asset_administration_shells:
+            et_asset_administration_shells.append(
+                etree.fromstring(aas_xmlization.to_str(aas_obj)))
+        root.append(et_asset_administration_shells)
+    if submodels:
+        et_submodels = etree.Element(NS_AAS + "submodels")
+        for sub_obj in submodels:
+            et_submodels.append(etree.fromstring(aas_xmlization.to_str(sub_obj)))
+        root.append(et_submodels)
+    if concept_descriptions:
+        et_concept_descriptions = etree.Element(NS_AAS + "conceptDescriptions")
+        for con_obj in concept_descriptions:
+            et_concept_descriptions.append(etree.fromstring(aas_xmlization.to_str(con_obj)))
+        root.append(et_concept_descriptions)
+    etree.ElementTree(root).write(file, encoding="UTF-8", xml_declaration=True, method="xml")
+
+
+class _DetachingTextIOWrapper(io.TextIOWrapper):
+    """
+    Like :class:`io.TextIOWrapper`, but detaches on context exit instead of closing the wrapped buffer.
+    """
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.detach()
