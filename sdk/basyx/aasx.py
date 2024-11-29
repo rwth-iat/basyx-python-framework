@@ -52,7 +52,7 @@ RELATIONSHIP_TYPE_AAS_SUPL = "http://admin-shell.io/aasx/relationships/aas-suppl
 
 
 # type aliases for path-like objects and IO
-# used by write_aas_xml_file, read_aas_xml_file, write_aas_json_file, read_aas_json_file
+# used by parse_obj_store_to_xml, parse_xml_to_obj_store, parse_obj_store_to_json, parse_json_to_obj_store
 Path = Union[str, bytes, os.PathLike]
 PathOrBinaryIO = Union[Path, BinaryIO]
 PathOrIO = Union[Path, IO]  # IO is TextIO or BinaryIO
@@ -203,8 +203,6 @@ class AASXReader:
         """
         Helper function for :meth:`read_into()` to read and process the contents of an AAS-spec part of the AASX file.
 
-        This method primarily checks for duplicate objects. It uses ``_parse_aas_parse()`` to do the actual parsing and
-        ``_collect_supplementary_files()`` for supplementary file processing of non-duplicate objects.
 
         :param part_name: The OPC part name to read
         :param object_store: An ObjectStore to add the AAS objects from the AASX file to
@@ -249,13 +247,13 @@ class AASXReader:
         if content_type.split(";")[0] in ("text/xml", "application/xml") or content_type == "" and extension == "xml":
             logger.debug("Parsing AAS objects from XML stream in OPC part {} ...".format(part_name))
             with self.reader.open_part(part_name) as p:
-                return read_aas_xml_file(p, **kwargs)
+                return parse_xml_to_obj_store(p, **kwargs)
         elif content_type.split(";")[0] in ("text/json", "application/json") \
                 or content_type == "" and extension == "json":
             logger.debug("Parsing AAS objects from JSON stream in OPC part {} ...".format(part_name))
 
             with self.reader.open_part(part_name) as p:
-                return read_aas_json_file(io.TextIOWrapper(p, encoding='utf-8-sig'), **kwargs)
+                return parse_json_to_obj_store(io.TextIOWrapper(p, encoding='utf-8-sig'), **kwargs)
         else:
             logger.error("Could not determine part format of AASX part {} (Content Type: {}, extension: {}"
                          .format(part_name, content_type, extension))
@@ -504,9 +502,9 @@ class AASXWriter:
         # TODO allow writing xml *and* JSON part
         with self.writer.open_part(part_name, "application/json" if write_json else "application/xml") as p:
             if write_json:
-                write_aas_json_file(io.TextIOWrapper(p, encoding='utf-8'), objects)
+                parse_obj_store_to_json(io.TextIOWrapper(p, encoding='utf-8'), objects)
             else:
-                write_aas_xml_file(p, objects)
+                parse_obj_store_to_xml(p, objects)
 
         # Write submodel's supplementary files to AASX file
         supplementary_file_names = []
@@ -789,7 +787,7 @@ class DictSupplementaryFileContainer(AbstractSupplementaryFileContainer):
         return iter(self._name_map)
 
 
-def read_aas_json_file(file: PathOrIO) -> ObjectStore[model.Identifiable]:
+def parse_json_to_obj_store(file: PathOrIO) -> ObjectStore[model.Identifiable]:
     """
     Read an Asset Administration Shell JSON file according to 'Details of the Asset Administration Shell', chapter 5.5
     into a given object store.
@@ -839,7 +837,7 @@ def read_aas_json_file(file: PathOrIO) -> ObjectStore[model.Identifiable]:
     return object_store
 
 
-def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
+def parse_obj_store_to_json(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
     """
     Write a set of AAS objects to an Asset Administration Shell JSON file according to 'Details of the Asset
     Administration Shell', chapter 5.5
@@ -887,7 +885,7 @@ def write_aas_json_file(file: PathOrIO, data: ObjectStore, **kwargs) -> None:
         json.dump(dict_, fp, **kwargs)
 
 
-def read_aas_xml_file(file: PathOrIO, **parser_kwargs) -> ObjectStore[model.Identifiable]:
+def parse_xml_to_obj_store(file: PathOrIO, **parser_kwargs) -> ObjectStore[model.Identifiable]:
     """
     Able to parse the official schema files into a given
     :class:`ObjectStore <basyx.aas.model.provider.AbstractObjectStore>`.
@@ -943,11 +941,9 @@ def read_aas_xml_file(file: PathOrIO, **parser_kwargs) -> ObjectStore[model.Iden
     return object_store
 
 
-def write_aas_xml_file(file: PathOrIO, data: ObjectStore) -> None:
+def parse_obj_store_to_xml(file: PathOrIO, data: ObjectStore) -> None:
     """
     Serialize a set of AAS objects to an Asset Administration Shell as :class:`~lxml.etree._Element`.
-    This function is used internally by :meth:`write_aas_xml_file` and shouldn't be
-    called directly for most use-cases.
 
     :param file: A filename or file-like object to read the JSON-serialized data from
     :param data: :class:`ObjectStore <basyx.ObjectStore>` which contains different objects of

@@ -149,13 +149,12 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         """
         referable: Referable
         identifiable = self.get_identifiable(identifier)
-        for referable in identifiable.descend():
+        for element in identifiable.descend():
 
             if (
-                    issubclass(type(referable), Referable)
-                    and id_short in referable.id_short
+                    isinstance(element, Referable) and id_short == element.id_short
             ):
-                return referable
+                return element
         raise KeyError("Referable object with short_id {} does not exist for identifiable object with id {}"
                        .format(id_short, identifier))
 
