@@ -11,7 +11,28 @@ Functionality for reading and writing AASX files according to "Specification of 
 Package File Format (AASX) v3.0".
 The AASX file format is built upon the Open Packaging Conventions (OPC; ECMA 376-2). We use the ``pyecma376_2`` library
 for low level OPC reading and writing. It currently supports all required features except for embedded digital
-signatures.
+signatures. The following codeblock contains the required imports and functions to use the adapter.
+
+    .. code-block:: python
+
+        from basyx import model # Shortcut to import aas_core3 which should be installed after installing requirements
+        from basyx.aasx import AASXWriter
+        from basyx.object_store import ObjectStore
+
+        object_store: ObjectStore = ObjectStore()
+        file_store = DictSupplementaryFileContainer()
+
+        aas = model.AssetAdministrationShell(id='https://acplt.org/Simple_AAS',
+                                            asset_information=model.AssetInformation(
+                                             asset_kind=model.AssetKind.TYPE))
+
+        with AASXWriter("./MyAASXPackage.aasx") as writer:
+
+            writer.write_aas(aas_ids=['https://acplt.org/Simple_AAS'],
+                     object_store=object_store,
+                     file_store=file_store)
+    ..
+
 
 Writing and reading of AASX packages is performed through the :class:`~.AASXReader` and :class:`~.AASXWriter` classes.
 Each instance of these classes wraps an existing AASX file resp. a file to be created and allows to read/write the

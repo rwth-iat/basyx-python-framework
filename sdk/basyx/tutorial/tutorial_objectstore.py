@@ -7,7 +7,7 @@
 
 from basyx.object_store import ObjectStore
 from aas_core3.types import Identifiable, AssetAdministrationShell, AssetInformation, AssetKind
-import aas_core3.types as aas_types
+from basyx import model as aas_types
 
 aas = AssetAdministrationShell(id="urn:x-test:aas1",
                                asset_information=AssetInformation(asset_kind=AssetKind.TYPE))
