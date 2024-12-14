@@ -4,7 +4,7 @@ from aas_core3.types import Identifiable
 from fastapi import APIRouter, Request, HTTPException
 
 from sdk.basyx import ObjectStore
-from sdk.basyx.server.services.submodel_service import SubmodelService
+from api.server.services.submodel_service import SubmodelService
 
 
 class SubmodelRouter:
