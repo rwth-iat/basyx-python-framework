@@ -75,7 +75,7 @@ class SubmodelRouter:
 
         @self.router.patch("/{submodel_id}/$value")
         async def not_implemented_value_patch(submodel_id: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+            raise HTTPException(status_code=501, detail="This route is yet implemented!")
 
         @self.router.get("/{submodel_id}/$reference")
         async def get_submodels_reference(submodel_id: str) -> Any:
@@ -83,7 +83,7 @@ class SubmodelRouter:
 
         @self.router.get("/{submodel_id}/$path")
         async def not_implemented_path_get(submodel_id: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+            raise HTTPException(status_code=501, detail="This route is yet implemented!")
 
         @self.router.get("/{submodel_id}/submodel-elements")
         async def get_submodel_submodel_elements(submodel_id: str) -> Any:
