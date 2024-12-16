@@ -3,14 +3,14 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "basyx-python-framework-base"
+name = "basyx-server" # TODO: name is tbd
 version = "0.1"
-dependencies = ["aas-core3.0"]
+dependencies = ["aas-core3.0","fastapi","basyx-python-framework-base","uvicorn"]
 requires-python = ">=3.8, <3.13"
 authors = [
   {name = "The Eclipse BaSyx Authors"}
 ]
-
-description="The Eclipse BaSyx Python SDK, an implementation of the Asset Administration Shell for Industry 4.0 systems"
+# TODO: description is tbd
+description="The Eclipse BaSyx Server does stuff"
 readme = "README.md"
 license = {file = "./LICENSE"}
