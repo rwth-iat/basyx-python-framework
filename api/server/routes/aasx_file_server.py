@@ -3,8 +3,8 @@ from typing import Any
 from aas_core3.types import Identifiable
 from fastapi import APIRouter, Request, HTTPException
 
-from sdk.basyx import ObjectStore
-from api.server.services.aasx_flie_server_service import AasxFileServerService
+from basyx import ObjectStore
+from services.aasx_flie_server_service import AasxFileServerService
 
 
 class AasxFileServerRouter:

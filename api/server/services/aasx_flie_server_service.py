@@ -1,4 +1,4 @@
-from sdk.basyx import ObjectStore
+from basyx import ObjectStore
 
 
 class AasxFileServerService():
