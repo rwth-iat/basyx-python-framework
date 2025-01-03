@@ -16,5 +16,24 @@ class AasxFileServerRouter:
 
     def _setup_routes(self):
         @self.router.get("/")
-        async def get_submodel_all() -> Any:
-            return self.service.dummy()
+        async def GetAllAASXPackageIds() -> Any:
+            return self.service.GetAllAASXPackageIds()
+
+        @self.router.get("/{aasx_package_id}")
+        async def GetAASXByPackageId(aasx_package_id: str) -> Any:
+            return self.service.GetAASXByPackageId(aasx_package_id)
+
+        @self.router.post("/")
+        async def PostAASXPackage(request: Request) -> Any:
+            body = await request.json()
+            return self.service.PostAASXPackage(body)
+
+        @self.router.put("/")
+        async def PutAASXByPackageId(request: Request) -> Any:
+            body = await request.json()
+            return self.service.PutAASXByPackageId(body)
+
+        @self.router.delete("/{aasx_package_id}")
+        async def DeleteAASXByPackageId(aasx_package_id: str) -> Any:
+            return self.service.DeleteAASXByPackageId(aasx_package_id)
+        
