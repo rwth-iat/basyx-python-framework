@@ -131,6 +131,15 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
         if self._backend.get(x.id) is x:
             del self._backend[x.id]
 
+    def delete(self, x: str) -> None:
+        """
+                Discard identifiable from the Objectstore
+
+                :param x: Id of Identifiable instance to discard
+                """
+        if self._backend.get(x):
+            del self._backend[x]
+
     def get_referable(self, identifier: str, id_short: str) -> Referable:
         """
         Get referable by using its id_short and the identifier of the identifiable it refers to
