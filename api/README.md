@@ -60,3 +60,13 @@ Below is the status table for the endpoints, organized as specified.
 | `/submodels/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | DELETE    | TODO        | Planned     |
 
 Tables for the remaining services will follow.
+
+
+## AASX File Server Interface and Operations
+| Endpoint                  | Operation | Description | Status  |
+|---------------------------|-----------|-------------|---------|
+| `/GetAllAASXPackageIds/`  | GET       | TODO        | Planned |
+| `/GetAASXByPackageId/`    | POST      | TODO        | Planned |
+| `/PostAASXPackage/`       | POST      | TODO        | Planned |
+| `/PutAASXByPackageId/`    | PUT       | TODO        | Planned |
+| `/DeleteAASXByPackageId/` | DELETE    | TODO        | Planned |
