@@ -31,7 +31,8 @@ class AasxFileServerService:
     def PutAASXByPackageId(self, json):
         aasx_package = jsonization.asset_administration_shell_from_jsonable(json)
         try:
-            self.obj_store.delete(aasx_package.id)  # should there be an exception if there is no aasx_package to update?
+            self.obj_store.delete(aasx_package.id)  # should there be an exception if there is no aasx_package to
+            # update?
             self.obj_store.add(aasx_package)
         except KeyError as e:
             # TODO: Provide a stacktrace
@@ -41,7 +42,7 @@ class AasxFileServerService:
 
     def DeleteAASXByPackageId(self, package_id):
         try:
-            self.obj_store.delete(package_id)  # should there be an exception if there is no aasx_package to update?
+            self.obj_store.delete(package_id)  # should there be an exception if there is no aasx_package to delete?
         except KeyError as e:
             # TODO: Provide a stacktrace
             # Wenn anders in Spezifikation, Stacktrace in server log

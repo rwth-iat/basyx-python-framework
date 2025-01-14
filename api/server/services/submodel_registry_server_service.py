@@ -1,0 +1,113 @@
+from basyx import ObjectStore
+from aas_core3.types import AssetAdministrationShell, Submodel
+from aas_core3 import jsonization
+from fastapi import HTTPException
+from typing import Any, MutableMapping
+from aas_core3.types import AssetAdministrationShell, ConceptDescription
+
+
+class SubmodelRegistryServerService:
+    def __init__(self, global_object_store: ObjectStore):
+        self.obj_store = global_object_store
+
+    def GetAllSubmodelDescriptors(self) -> list[str]:
+        #print(self.obj_store.__dict__)
+
+        all_descriptors = self.obj_store.filter_identifiables_by_instance(ConceptDescription)
+        #print(all_descriptors.__dict__)
+        print(all_descriptors)
+        #print("test")
+        submodel_descriptors_store = ObjectStore()
+        for descriptor in all_descriptors:
+            reference_list = descriptor.is_case_of
+            print(reference_list)
+            for element in reference_list:
+                reference_ids = element.keys
+                print(reference_ids)
+                for reference_id in reference_ids:
+                    try:
+                        identifiable = self.obj_store.get_identifiable(reference_id.value)
+                    except KeyError as e:
+                        # TODO: Provide a stacktrace
+                        # Wenn anders in Spezifikation, Stacktrace in server log
+                        identifiable = []
+                    if isinstance(identifiable, Submodel):
+                        try:
+                            submodel_descriptors_store.add(descriptor)
+                        except KeyError as e:
+                            pass
+        return [jsonization.to_jsonable(descriptor) for descriptor in submodel_descriptors_store]
+
+    def GetSubmodelDescriptorById(self, descriptor_id) \
+            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+        try:
+            aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail=str(e))
+        assert isinstance(aas_descriptor, ConceptDescription)
+        return jsonization.to_jsonable(aas_descriptor)
+
+    def PostSubmodelDescriptor(self, json):
+        submodel_descriptor = jsonization.concept_description_from_jsonable(json)
+
+        # Check if all referenced submodels exist in the obeject_store
+
+        for reference in submodel_descriptor.is_case_of:
+            reference_ids = reference.keys
+            for reference_id in reference_ids:
+                try:
+                    self.obj_store.get_identifiable(reference_id.value)
+                except KeyError as e:
+                    # TODO: Provide a stacktrace
+                    # Wenn anders in Spezifikation, Stacktrace in server log
+                    raise HTTPException(status_code=400, detail= "A referenced submodel of the concept description "
+                                                                 "with the following id does not exist in the "
+                                                                 "object_store:" + str(e))
+
+        try:
+            self.obj_store.add(submodel_descriptor)
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail="A referenced submodel of the concept description "
+                                                        "with the following id does not exist in the "
+                                                        "object_store:" + str(e))
+        return {"message": "Submodel descriptor processed"}
+
+    def PutSubmodelDescriptorById(self, json):
+        submodel_descriptor = jsonization.concept_description_from_jsonable(json)
+
+        # Check if all referenced submodels exist in the obeject_store
+
+        for reference in submodel_descriptor.is_case_of:
+            reference_ids = reference.keys
+            for reference_id in reference_ids:
+                try:
+                    self.obj_store.get_identifiable(reference_id.value)
+                except KeyError as e:
+                    # TODO: Provide a stacktrace
+                    # Wenn anders in Spezifikation, Stacktrace in server log
+                    raise HTTPException(status_code=400, detail= "A referenced submodel of the concept description "
+                                                                 "with the following id does not exist in the "
+                                                                 "object_store:" + str(e))
+
+        try:
+            self.obj_store.delete(submodel_descriptor.id)  # should there be an exception if there is no aasx_package to
+            # update?
+            self.obj_store.add(submodel_descriptor)
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail=str(e))
+        return {"message": "AASX package updated"}
+
+    def DeleteSubmodelDescriptorById(self, descriptor_id):
+        try:
+            self.obj_store.delete(descriptor_id)  # should there be an exception if there is no aasx_package to delete?
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail=str(e))
+        return {"message": "Submodel descriptor deleted"}

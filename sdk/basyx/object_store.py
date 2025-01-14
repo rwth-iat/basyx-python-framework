@@ -10,7 +10,7 @@ This module implements Registries for the AAS, in order to enable resolving glob
 """
 
 import abc
-from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional, Iterable
+from typing import MutableSet, Iterator, Generic, TypeVar, Dict, List, Optional, Iterable, Type
 
 from aas_core3.types import Identifiable, Referable, Class
 
@@ -189,6 +189,19 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
                     if isinstance(referable, Referable) and referable.id_short == id_short:
                         return element
         raise KeyError("there is no parent Identifiable for id_short {}".format(id_short))
+
+    def filter_identifiables_by_instance(self, instance: Type) -> list[Type]:
+        """
+        Get all identifiables of the specified type.
+
+        :param instance: The Type to filter by. For example, we can filter by "aas_core3.types.ConceptDescription"
+        :return: The list of the filtered identifiables
+        """
+        filtered_identifiables = []
+        for identifiable in self._backend.values():
+            if isinstance(identifiable, instance):
+                filtered_identifiables.append(identifiable)
+        return filtered_identifiables
 
     def __contains__(self, x: object) -> bool:
         if isinstance(x, str):

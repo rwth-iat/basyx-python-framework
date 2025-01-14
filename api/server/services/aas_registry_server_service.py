@@ -1,0 +1,74 @@
+from basyx import ObjectStore
+from aas_core3.types import AssetAdministrationShell, ConceptDescription
+from aas_core3 import jsonization
+from fastapi import HTTPException
+from typing import Any, MutableMapping
+from aas_core3 import jsonization
+
+
+class AasRegistryServerService:
+    def __init__(self, global_object_store: ObjectStore):
+        self.obj_store = global_object_store
+
+    def GetAllAssetAdministrationShellDescriptors(self) -> list[str]:
+        all_descriptors = self.obj_store.filter_identifiables_by_instance(ConceptDescription)
+        print(all_descriptors.__dict__)
+        print(all_descriptors)
+        print("test")
+        aas_descriptors_store = ObjectStore()
+        for descriptor in all_descriptors:
+            reference_list = descriptor.is_case_of
+            print(reference_list)
+            for element in reference_list:
+                reference_ids = element.keys
+                for reference_id in reference_ids:
+                    try:
+                        identifiable = self.obj_store.get_identifiable(reference_id)
+                    except KeyError as e:
+                        # TODO: Provide a stacktrace
+                        # Wenn anders in Spezifikation, Stacktrace in server log
+                        raise HTTPException(status_code=400, detail=str(e))
+
+                    if isinstance(identifiable, AssetAdministrationShell):
+                        try:
+                            aas_descriptors_store.add(descriptor)
+                        except KeyError as e:
+                            pass
+        return [jsonization.to_jsonable(descriptor) for descriptor in aas_descriptors_store]
+
+    def GetAssetAdministrationShellDescriptorById(self, descriptor_id) \
+            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+        aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
+        assert isinstance(aas_descriptor, ConceptDescription)
+        return jsonization.to_jsonable(aas_descriptor)
+
+    def PostAssetAdministrationShellDescriptor(self, json):
+        aas_descriptor = jsonization.concept_description_from_jsonable(json)
+        try:
+            self.obj_store.add(aas_descriptor)
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail=str(e))
+        return {"message": "AAS Descriptor processed"}
+
+    def PutAssetAdministrationShellDescriptorById(self, json):
+        aas_descriptor = jsonization.asset_administration_shell_from_jsonable(json)
+        try:
+            self.obj_store.delete(aas_descriptor.id)  # should there be an exception if there is no aasx_package to
+            # update?
+            self.obj_store.add(aas_descriptor)
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail=str(e))
+        return {"message": "AASX package updated"}
+
+    def DeleteAssetAdministrationShellDescriptorById(self, descriptor_id):
+        try:
+            self.obj_store.delete(descriptor_id)  # should there be an exception if there is no aasx_package to delete?
+        except KeyError as e:
+            # TODO: Provide a stacktrace
+            # Wenn anders in Spezifikation, Stacktrace in server log
+            raise HTTPException(status_code=400, detail=str(e))
+        return {"message": "AASX descriptor deleted"}
