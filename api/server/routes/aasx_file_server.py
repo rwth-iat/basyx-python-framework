@@ -4,7 +4,7 @@ from aas_core3.types import Identifiable
 from fastapi import APIRouter, Request, HTTPException
 
 from basyx import ObjectStore
-from services.aasx_flie_server_service import AasxFileServerService
+from ..services.aasx_flie_server_service import AasxFileServerService
 
 
 class AasxFileServerRouter:

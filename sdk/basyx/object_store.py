@@ -190,16 +190,16 @@ class ObjectStore(AbstractObjectStore[_IdentifiableType], Generic[_IdentifiableT
                         return element
         raise KeyError("there is no parent Identifiable for id_short {}".format(id_short))
 
-    def filter_identifiables_by_instance(self, instance: Type) -> list[Type]:
+    def get_identifiables_by_type(self, t: Type) -> list[Type]:
         """
         Get all identifiables of the specified type.
 
-        :param instance: The Type to filter by. For example, we can filter by "aas_core3.types.ConceptDescription"
+        :param t: The Type to filter by. For example, we can filter by "aas_core3.types.ConceptDescription"
         :return: The list of the filtered identifiables
         """
         filtered_identifiables = []
         for identifiable in self._backend.values():
-            if isinstance(identifiable, instance):
+            if isinstance(identifiable, t):
                 filtered_identifiables.append(identifiable)
         return filtered_identifiables
 

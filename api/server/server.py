@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 
 # Import routers
-from routes import submodel, aasx_file_server, aas_registry_server, submodel_registry_server
+from .routes import submodel, aasx_file_server, aas_registry_server, submodel_registry_server
 
 from basyx import object_store
 
