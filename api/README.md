@@ -77,29 +77,29 @@ Below is the status table for the endpoints, organized as specified.
 ## AASX File Server Interface and Operations
 | Endpoint                  | Operation | Description | Status |
 |---------------------------|-----------|-------------|--------|
-| `/GetAllAASXPackageIds/`  | GET       | TODO        | 📅     |
-| `/GetAASXByPackageId/`    | POST      | TODO        | 📅     |
-| `/PostAASXPackage/`       | POST      | TODO        | 📅     |
-| `/PutAASXByPackageId/`    | PUT       | TODO        | 📅     |
-| `/DeleteAASXByPackageId/` | DELETE    | TODO        | 📅     |
+| `/GetAllAASXPackageIds/`  | GET       | TODO        | ✅      |
+| `/GetAASXByPackageId/`    | POST      | TODO        | ✅      |
+| `/PostAASXPackage/`       | POST      | TODO        | ✅      |
+| `/PutAASXByPackageId/`    | PUT       | TODO        | ✅      |
+| `/DeleteAASXByPackageId/` | DELETE    | TODO        | ✅      |
 
 ## AAS Registry Service
 | Endpoint                             | Operation | Description                                        | Status |
 |--------------------------------------|-----------|----------------------------------------------------|--------|
-| `/registry/aas-descriptors`          | GET       | Returns all Asset Administration Shell Descriptors | 📅     |
-| `/registry/aas-descriptors/{aas_id}` | GET       | Returns an AAS Descriptor by ID                    | 📅     |
-| `/registry/aas-descriptors`          | POST      | Creates an AAS Descriptor                          | 📅     |
-| `/registry/aas-descriptors/{aas_id}` | PUT       | Updates an AAS Descriptor                          | 📅     |
-| `/registry/aas-descriptors/{aas_id}` | DELETE    | Deletes an AAS Descriptor                          | 📅     |
+| `/registry/aas-descriptors`          | GET       | Returns all Asset Administration Shell Descriptors | ✅      |
+| `/registry/aas-descriptors/{aas_id}` | GET       | Returns an AAS Descriptor by ID                    | ✅      |
+| `/registry/aas-descriptors`          | POST      | Creates an AAS Descriptor                          | ✅      |
+| `/registry/aas-descriptors/{aas_id}` | PUT       | Updates an AAS Descriptor                          | ✅      |
+| `/registry/aas-descriptors/{aas_id}` | DELETE    | Deletes an AAS Descriptor                          | ✅      |
 
 ## Submodel Registry Service
 | Endpoint                                       | Operation | Description                         | Status |
 |------------------------------------------------|-----------|-------------------------------------|--------|
-| `/registry/submodel-descriptors`               | GET       | Returns all Submodel Descriptors    | 📅     |
-| `/registry/submodel-descriptors/{submodel_id}` | GET       | Returns a Submodel Descriptor by ID | 📅     |
-| `/registry/submodel-descriptors`               | POST      | Creates a Submodel Descriptor       | 📅     |
-| `/registry/submodel-descriptors/{submodel_id}` | PUT       | Updates a Submodel Descriptor       | 📅     |
-| `/registry/submodel-descriptors/{submodel_id}` | DELETE    | Deletes a Submodel Descriptor       | 📅     |
+| `/registry/submodel-descriptors`               | GET       | Returns all Submodel Descriptors    | ✅      |
+| `/registry/submodel-descriptors/{submodel_id}` | GET       | Returns a Submodel Descriptor by ID | ✅      |
+| `/registry/submodel-descriptors`               | POST      | Creates a Submodel Descriptor       | ✅      |
+| `/registry/submodel-descriptors/{submodel_id}` | PUT       | Updates a Submodel Descriptor       | ✅      |
+| `/registry/submodel-descriptors/{submodel_id}` | DELETE    | Deletes a Submodel Descriptor       | ✅      |
 
 ## Discovery Service
 | Endpoint                          | Operation | Description                          | Status |
