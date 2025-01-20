@@ -25,8 +25,16 @@ class SubmodelService:
             raise HTTPException(status_code=404, detail="Submodel with id " + submodel_id + " not found")
         return submodel
 
+    def _get_submodel_element_by_id_short(self, submodel_id, element_id_short):
+        submodel = self._get_submodel_by_id(submodel_id)
+        for element in submodel.descend():
+            if isinstance(element, SubmodelElement):
+                if element.id_short == element_id_short:
+                    return element
+        return None
+
     # Endpoint specific logic
-    def get_all_submodels_as_jsonables(self)\
+    def get_all_submodels_as_jsonables(self) \
             -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
         return self._jsonable_submodels(self._get_all_submodels())
 
@@ -44,12 +52,11 @@ class SubmodelService:
         submodel = self._get_submodel_by_id(submodel_id)
         return jsonization.to_jsonable(submodel)
 
-    def update_submode_by_id(self, submodel_id: str, json):
+    def update_submodel_by_id(self, submodel_id: str, json):
         submodel = self._get_submodel_by_id(submodel_id)
         new_submodel = jsonization.submodel_from_jsonable(json)
         if submodel.id != new_submodel.id:
             raise HTTPException(403, "Submodel with id " + submodel_id + " does not match")
-        # TODO: This cant be right
         self.obj_store.discard(submodel)
         self.obj_store.add(new_submodel)
         return jsonization.to_jsonable(new_submodel)
@@ -60,4 +67,55 @@ class SubmodelService:
         return {"message": "Submodel with id " + submodel_id + " deleted successfully"}
 
     def get_submodel_elements(self, submodel_id):
-        pass
+        submodel = self._get_submodel_by_id(submodel_id)
+        elements = []
+        for element in submodel.descend():
+            # Maybe filter some items out?
+            elements.append(jsonization.to_jsonable(element))
+        return elements
+
+    def update_submodel_elements(self, submodel_id, json):
+        submodel = self._get_submodel_by_id(submodel_id)
+        new_elements = []
+        for element in json:
+            deserialized_element = jsonization.submodel_element_from_jsonable(element)
+            new_elements.append(deserialized_element)
+        self.obj_store.discard(submodel)
+        submodel.submodel_elements = new_elements
+        self.obj_store.add(submodel)
+
+    def get_submodel_element(self, submodel_id, element_short_id):
+        element = self._get_submodel_element_by_id_short(submodel_id, element_short_id)
+        if element is None:
+            raise HTTPException(status_code=404, detail="Submodel element with id " + element_short_id + " not found.")
+        return jsonization.to_jsonable(element)
+
+    def post_submodel_element(self, submodel_id, body):
+        submodel = self._get_submodel_by_id(submodel_id)
+        submodel_element = jsonization.submodel_element_from_jsonable(body)
+        existing_submodel_element = self._get_submodel_element_by_id_short(submodel_id, submodel_element.id_short)
+        if existing_submodel_element is None:
+            submodel.submodel_elements.append(submodel_element)
+            return jsonization.to_jsonable(submodel_element)
+        else:
+            raise HTTPException(status_code=400, detail="Submodel element with id " + submodel_element.id_short + " already exists")
+
+    def put_submodel_element(self, submodel_id, body):
+        submodel = self._get_submodel_by_id(submodel_id)
+        submodel_element = jsonization.submodel_element_from_jsonable(body)
+        existing_submodel_element = self._get_submodel_element_by_id_short(submodel_id, submodel_element.id_short)
+        if existing_submodel_element is None:
+            raise HTTPException(status_code=404, detail="Submodel element with id " + submodel_element.id_short + " does not exist")
+        else:
+            submodel.submodel_elements.remove(existing_submodel_element)
+            submodel.submodel_elements.append(submodel_element)
+            return jsonization.to_jsonable(submodel_element)
+
+    def delete_submodel_element(self, submodel_id, id_short):
+        submodel = self._get_submodel_by_id(submodel_id)
+        existing_submodel_element = self._get_submodel_element_by_id_short(submodel_id, id_short)
+        if existing_submodel_element is None:
+            raise HTTPException(status_code=404, detail="Submodel element with id " + id_short + " does not exist")
+        else:
+            submodel.submodel_elements.remove(existing_submodel_element)
+            return jsonization.to_jsonable(existing_submodel_element)

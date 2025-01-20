@@ -46,15 +46,15 @@ Below is the status table for the endpoints, organized as specified.
 | `/submodels/{submodel_id}/$reference`                                                | GET       | Retrieve reference of a specific submodel                                    | 📅     |
 | `/submodels/{submodel_id}/$path`                                                     | GET       | Retrieve a specific submodel by path                                         | ❌      |
 | `/submodels/{submodel_id}/submodel-elements`                                         | GET       | Retrieve all elements of a specific submodel                                 | ✅      |
-| `/submodels/{submodel_id}/submodel-elements`                                         | POST      | Create new elements in a specific submodel                                   | 📅     |
+| `/submodels/{submodel_id}/submodel-elements`                                         | POST      | Create new elements in a specific submodel                                   | ✅      |
 | `/submodels/{submodel_id}/submodel-elements/$metadata`                               | GET       | Retrieve metadata for submodel elements                                      | 📅     |
 | `/submodels/{submodel_id}/submodel-elements/$reference`                              | GET       | Retrieve references for submodel elements                                    | 📅     |
 | `/submodels/{submodel_id}/submodel-elements/$value`                                  | GET       | Retrieve values for submodel elements                                        | ❌      |
 | `/submodels/{submodel_id}/submodel-elements/$path`                                   | GET       | Retrieve elements by path in a specific submodel                             | ❌      |
-| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | GET       | Retrieve specific elements by short ID in a submodel                         | 📅     |
-| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | POST      | Create specific elements by short ID in a submodel                           | 📅     |
-| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | PUT       | Update specific elements by short ID in a submodel                           | 📅     |
-| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | DELETE    | Delete specific elements by short ID in a submodel                           | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | GET       | Retrieve specific elements by short ID in a submodel                         | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | POST      | Create specific elements by short ID in a submodel                           | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | PUT       | Update specific elements by short ID in a submodel                           | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | DELETE    | Delete specific elements by short ID in a submodel                           | ✅      |
 | `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | PATCH     | Partially update specific elements by short ID in a submodel                 | ❌      |
 | `/submodels/{submodel_id}/submodel-elements/{id_shorts}/$metadata`                   | GET       | Retrieve metadata of specific elements by short ID                           | 📅     |
 | `/submodels/{submodel_id}/submodel-elements/{id_shorts}/$metadata`                   | PATCH     | Update metadata of specific elements by short ID                             | ❌      |

@@ -50,7 +50,7 @@ class SubmodelRouter:
         async def put_submodel(submodel_id: str, request: Request) -> Any:
             # Update submodel with given id
             body = await request.json()
-            return self.service.update_submode_by_id(submodel_id, body)
+            return self.service.update_submodel_by_id(submodel_id, body)
 
         @self.router.delete("/{submodel_id}")
         async def delete_submodel(submodel_id: str) -> Any:
@@ -112,19 +112,21 @@ class SubmodelRouter:
 
         @self.router.get("/{submodel_id}/submodel-elements/{id_shorts}")
         async def get_submodel_submodel_elements_id_short_path(submodel_id: str, id_shorts: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+            return self.service.get_submodel_element(submodel_id, id_shorts)
 
         @self.router.post("/{submodel_id}/submodel-elements/{id_shorts}")
-        async def post_submodel_submodel_elements_id_short_path(submodel_id: str, id_shorts: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+        async def post_submodel_submodel_elements_id_short_path(submodel_id: str, request: Request) -> Any:
+            body = await request.json()
+            return self.service.post_submodel_element(submodel_id, body)
 
         @self.router.put("/{submodel_id}/submodel-elements/{id_shorts}")
-        async def put_submodel_submodel_elements_id_short_path(submodel_id: str, id_shorts: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+        async def put_submodel_submodel_elements_id_short_path(submodel_id: str, request: Request) -> Any:
+            body = await request.json()
+            return self.service.put_submodel_element(submodel_id, body)
 
         @self.router.delete("/{submodel_id}/submodel-elements/{id_shorts}")
         async def delete_submodel_submodel_elements_id_short_path(submodel_id: str, id_shorts: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+            return self.service.delete_submodel_element(submodel_id, id_shorts)
 
         @self.router.patch("/{submodel_id}/submodel-elements/{id_shorts}")
         async def not_implemented_patch_submodel_submodel_elements_id_short_path(submodel_id: str,
