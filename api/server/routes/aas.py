@@ -1,8 +1,9 @@
-from fastapi import APIRouter
 from typing import Any
 
-router = APIRouter()
+from fastapi import APIRouter
 
+
+router = APIRouter()
 
 @router.get("/aas")
 async def get_all_aas() -> Any:

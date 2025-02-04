@@ -1,10 +1,10 @@
 from typing import Any
 
 from aas_core3.types import Identifiable
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request
 
-from basyx import ObjectStore
-from ..services.submodel_registry_server_service import SubmodelRegistryServerService
+from api.server.services.submodel_registry_server_service import SubmodelRegistryServerService
+from sdk.basyx import ObjectStore
 
 
 class SubmodelRegistryRouter:

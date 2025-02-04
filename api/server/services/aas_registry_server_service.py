@@ -1,9 +1,10 @@
-from basyx import ObjectStore
-from aas_core3.types import AssetAdministrationShell, ConceptDescription
-from aas_core3 import jsonization
-from fastapi import HTTPException
 from typing import Any, MutableMapping
+
 from aas_core3 import jsonization
+from aas_core3.types import AssetAdministrationShell, ConceptDescription
+from fastapi import HTTPException
+
+from sdk.basyx import ObjectStore
 
 
 class AasRegistryServerService:
@@ -11,7 +12,7 @@ class AasRegistryServerService:
         self.obj_store = global_object_store
 
     def GetAllAssetAdministrationShellDescriptors(self) -> list[str]:
-        all_descriptors = self.obj_store.filter_identifiables_by_instance(ConceptDescription)
+        all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
         print(all_descriptors.__dict__)
         print(all_descriptors)
         print("test")

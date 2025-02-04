@@ -1,9 +1,10 @@
-from basyx import ObjectStore
-from aas_core3.types import AssetAdministrationShell, Submodel
-from aas_core3 import jsonization
-from fastapi import HTTPException
 from typing import Any, MutableMapping
-from aas_core3.types import AssetAdministrationShell, ConceptDescription
+
+from aas_core3 import jsonization
+from aas_core3.types import Submodel, ConceptDescription
+from fastapi import HTTPException
+
+from sdk.basyx import ObjectStore
 
 
 class SubmodelRegistryServerService:
@@ -13,7 +14,7 @@ class SubmodelRegistryServerService:
     def GetAllSubmodelDescriptors(self) -> list[str]:
         #print(self.obj_store.__dict__)
 
-        all_descriptors = self.obj_store.filter_identifiables_by_instance(ConceptDescription)
+        all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
         #print(all_descriptors.__dict__)
         print(all_descriptors)
         #print("test")

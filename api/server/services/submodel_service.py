@@ -1,10 +1,10 @@
 from typing import Any, MutableMapping
 
 from aas_core3 import jsonization
-from aas_core3.types import Submodel
+from aas_core3.types import Submodel, SubmodelElement
 from fastapi import HTTPException
 
-from basyx import ObjectStore
+from sdk.basyx import ObjectStore
 
 
 class SubmodelService:

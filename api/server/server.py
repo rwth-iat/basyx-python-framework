@@ -1,10 +1,8 @@
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 
-# Import routers
-from .routes import submodel, aasx_file_server, aas_registry_server, submodel_registry_server
-
-from basyx import object_store
+from api.server.routes import submodel, aasx_file_server, aas_registry_server, submodel_registry_server
+from sdk.basyx import object_store
 
 app = FastAPI()
 prefix = "/api/v3.0"

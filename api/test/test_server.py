@@ -1,6 +1,7 @@
 import unittest
 from fastapi.testclient import TestClient
-from server import app
+
+from api.server import app
 
 client = TestClient(app)
 BASE_URL = "/api/v3.0/"
