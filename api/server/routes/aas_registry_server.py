@@ -3,8 +3,8 @@ from typing import Any
 from aas_core3.types import Identifiable
 from fastapi import APIRouter, Request
 
-from api.server.services.aas_registry_server_service import AasRegistryServerService
-from sdk.basyx import ObjectStore
+from server.services.aas_registry_server_service import AasRegistryServerService
+from basyx import ObjectStore
 
 
 class AasRegistryRouter:

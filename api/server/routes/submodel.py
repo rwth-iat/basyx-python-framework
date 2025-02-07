@@ -3,8 +3,8 @@ from typing import Any
 from aas_core3.types import Identifiable
 from fastapi import APIRouter, Request, HTTPException
 
-from api.server.services.submodel_service import SubmodelService
-from sdk.basyx import ObjectStore
+from server.services.submodel_service import SubmodelService
+from basyx import ObjectStore
 
 
 class SubmodelRouter:

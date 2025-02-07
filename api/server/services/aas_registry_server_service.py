@@ -4,7 +4,7 @@ from aas_core3 import jsonization
 from aas_core3.types import AssetAdministrationShell, ConceptDescription
 from fastapi import HTTPException
 
-from sdk.basyx import ObjectStore
+from basyx import ObjectStore
 
 
 class AasRegistryServerService:

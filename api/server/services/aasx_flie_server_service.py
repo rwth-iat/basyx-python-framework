@@ -4,7 +4,7 @@ from aas_core3.types import AssetAdministrationShell
 from aas_core3 import jsonization
 from fastapi import HTTPException
 
-from sdk.basyx import ObjectStore
+from basyx import ObjectStore
 
 
 class AasxFileServerService:
