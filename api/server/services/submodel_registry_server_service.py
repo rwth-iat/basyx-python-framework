@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping, List
+from typing import Any, MutableMapping, List, Union
 
 from aas_core3 import jsonization
 from aas_core3.types import Submodel, ConceptDescription
@@ -40,7 +40,7 @@ class SubmodelRegistryServerService:
         return [jsonization.to_jsonable(descriptor) for descriptor in submodel_descriptors_store]
 
     def GetSubmodelDescriptorById(self, descriptor_id) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         try:
             aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
         except KeyError as e:

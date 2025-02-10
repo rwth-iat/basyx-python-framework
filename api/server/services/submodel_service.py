@@ -35,7 +35,7 @@ class SubmodelService:
 
     # Endpoint specific logic
     def get_all_submodels_as_jsonables(self) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         return self._jsonable_submodels(self._get_all_submodels())
 
     def add_submodel_from_body(self, json):

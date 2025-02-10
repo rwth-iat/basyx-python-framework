@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping, List
+from typing import Any, MutableMapping, List, Union
 
 from aas_core3.types import AssetAdministrationShell
 from aas_core3 import jsonization
@@ -15,7 +15,7 @@ class AasxFileServerService:
         return [item.id for item in self.obj_store if isinstance(item, AssetAdministrationShell)]
 
     def GetAASXByPackageId(self, package_id) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         aasx_package = self.obj_store.get_identifiable(package_id)
         assert isinstance(aasx_package, AssetAdministrationShell)
         return jsonization.to_jsonable(aasx_package)
