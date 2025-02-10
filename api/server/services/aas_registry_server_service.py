@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, List
 
 from aas_core3 import jsonization
 from aas_core3.types import AssetAdministrationShell, ConceptDescription
@@ -11,7 +11,7 @@ class AasRegistryServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def GetAllAssetAdministrationShellDescriptors(self) -> list[str]:
+    def GetAllAssetAdministrationShellDescriptors(self) -> List[str]:
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
         print(all_descriptors.__dict__)
         print(all_descriptors)

@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, List
 
 from aas_core3 import jsonization
 from aas_core3.types import Submodel, SubmodelElement
@@ -12,11 +12,11 @@ class SubmodelService:
         self.obj_store = global_object_store
 
     # General helper functions
-    def _get_all_submodels(self) -> list[Submodel]:
+    def _get_all_submodels(self) -> List[Submodel]:
         return [item for item in self.obj_store if isinstance(item, Submodel)]
 
-    def _jsonable_submodels(self, submodels: list[Submodel]) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+    def _jsonable_submodels(self, submodels: List[Submodel]) \
+            -> List[bool | int | float | str | List[Any] | MutableMapping[str, Any]]:
         return [jsonization.to_jsonable(submodel) for submodel in submodels]
 
     def _get_submodel_by_id(self, submodel_id):

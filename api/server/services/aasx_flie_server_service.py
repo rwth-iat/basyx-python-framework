@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, List
 
 from aas_core3.types import AssetAdministrationShell
 from aas_core3 import jsonization
@@ -11,7 +11,7 @@ class AasxFileServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def GetAllAASXPackageIds(self) -> list[str]:
+    def GetAllAASXPackageIds(self) -> List[str]:
         return [item.id for item in self.obj_store if isinstance(item, AssetAdministrationShell)]
 
     def GetAASXByPackageId(self, package_id) \

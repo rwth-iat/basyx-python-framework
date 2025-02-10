@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, List
 
 from aas_core3 import jsonization
 from aas_core3.types import Submodel, ConceptDescription
@@ -11,7 +11,7 @@ class SubmodelRegistryServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def GetAllSubmodelDescriptors(self) -> list[str]:
+    def GetAllSubmodelDescriptors(self) -> List[str]:
         #print(self.obj_store.__dict__)
 
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
