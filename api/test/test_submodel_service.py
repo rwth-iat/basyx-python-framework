@@ -1,7 +1,7 @@
 import unittest
 from fastapi.testclient import TestClient
 
-from api.server import app
+from server import app
 from .examples.submodels import test_submodel_modified, test_submodel
 
 client = TestClient(app)
