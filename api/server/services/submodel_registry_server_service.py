@@ -11,7 +11,7 @@ class SubmodelRegistryServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def GetAllSubmodelDescriptors(self) -> list[str]:
+    def get_all_submodel_descriptors(self) -> list[str]:
         #print(self.obj_store.__dict__)
 
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
@@ -39,7 +39,7 @@ class SubmodelRegistryServerService:
                             pass
         return [jsonization.to_jsonable(descriptor) for descriptor in submodel_descriptors_store]
 
-    def GetSubmodelDescriptorById(self, descriptor_id) \
+    def get_submodel_descriptor_by_id(self, descriptor_id) \
             -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
         try:
             aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
@@ -50,7 +50,7 @@ class SubmodelRegistryServerService:
         assert isinstance(aas_descriptor, ConceptDescription)
         return jsonization.to_jsonable(aas_descriptor)
 
-    def PostSubmodelDescriptor(self, json):
+    def post_submodel_descriptor(self, json):
         submodel_descriptor = jsonization.concept_description_from_jsonable(json)
 
         # Check if all referenced submodels exist in the obeject_store
@@ -77,7 +77,7 @@ class SubmodelRegistryServerService:
                                                         "object_store:" + str(e))
         return {"message": "Submodel descriptor processed"}
 
-    def PutSubmodelDescriptorById(self, json):
+    def put_submodel_descriptor_by_id(self, json):
         submodel_descriptor = jsonization.concept_description_from_jsonable(json)
 
         # Check if all referenced submodels exist in the obeject_store
@@ -104,7 +104,7 @@ class SubmodelRegistryServerService:
             raise HTTPException(status_code=400, detail=str(e))
         return {"message": "AASX package updated"}
 
-    def DeleteSubmodelDescriptorById(self, descriptor_id):
+    def delete_submodel_descriptor_by_id(self, descriptor_id):
         try:
             self.obj_store.delete(descriptor_id)  # should there be an exception if there is no aasx_package to delete?
         except KeyError as e:

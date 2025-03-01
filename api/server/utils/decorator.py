@@ -1,7 +1,7 @@
-
 from functools import wraps
 from fastapi import Request
-from typing import Callable, Any, List, Union
+from typing import Callable, Any, Union
+
 
 def limited(default_limit: int = 100):
     def decorator(func: Callable):
@@ -25,4 +25,5 @@ def limited(default_limit: int = 100):
             return result  # If not a list, return as-is
 
         return wrapper
+
     return decorator

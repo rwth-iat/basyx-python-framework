@@ -11,7 +11,7 @@ class AasRegistryServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def GetAllAssetAdministrationShellDescriptors(self) -> list[str]:
+    def get_all_asset_administration_shell_descriptors(self) -> list[str]:
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
         print(all_descriptors.__dict__)
         print(all_descriptors)
@@ -37,13 +37,13 @@ class AasRegistryServerService:
                             pass
         return [jsonization.to_jsonable(descriptor) for descriptor in aas_descriptors_store]
 
-    def GetAssetAdministrationShellDescriptorById(self, descriptor_id) \
+    def get_asset_administration_shell_descriptor_by_id(self, descriptor_id) \
             -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
         aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
         assert isinstance(aas_descriptor, ConceptDescription)
         return jsonization.to_jsonable(aas_descriptor)
 
-    def PostAssetAdministrationShellDescriptor(self, json):
+    def post_asset_administration_shell_descriptor(self, json):
         aas_descriptor = jsonization.concept_description_from_jsonable(json)
         try:
             self.obj_store.add(aas_descriptor)
@@ -53,7 +53,7 @@ class AasRegistryServerService:
             raise HTTPException(status_code=400, detail=str(e))
         return {"message": "AAS Descriptor processed"}
 
-    def PutAssetAdministrationShellDescriptorById(self, json):
+    def put_asset_administration_shell_descriptor_by_id(self, json):
         aas_descriptor = jsonization.asset_administration_shell_from_jsonable(json)
         try:
             self.obj_store.delete(aas_descriptor.id)  # should there be an exception if there is no aasx_package to
@@ -65,7 +65,7 @@ class AasRegistryServerService:
             raise HTTPException(status_code=400, detail=str(e))
         return {"message": "AASX package updated"}
 
-    def DeleteAssetAdministrationShellDescriptorById(self, descriptor_id):
+    def delete_asset_administration_shell_descriptor_by_id(self, descriptor_id):
         try:
             self.obj_store.delete(descriptor_id)  # should there be an exception if there is no aasx_package to delete?
         except KeyError as e:

@@ -18,8 +18,7 @@ class SubmodelService:
     def _get_all_submodel_references_by_shell(self, aasIdentifier: str) -> List[Type]:
         shell = self.obj_store.get(aasIdentifier)
         if isinstance(shell, AssetAdministrationShell):
-            print("Submodel found")
-            return shell.submodels
+            return shell.submodels  # FIXME: Typing issues, should this be (safe) casted?
         else:
             raise HTTPException(status_code=404, detail="AAS " + aasIdentifier + " not found")
 
@@ -29,7 +28,7 @@ class SubmodelService:
 
     def _get_submodel_by_id(self, submodel_id):
         submodel = self.obj_store.get(submodel_id)
-        if submodel is None:
+        if submodel is None or not isinstance(submodel, Submodel):
             raise HTTPException(status_code=404, detail="Submodel with id " + submodel_id + " not found")
         return submodel
 
@@ -42,10 +41,10 @@ class SubmodelService:
         return None
 
     # Endpoint specific logic
-    def get_all_submodels_as_jsonables(self, aasIdentifier: str) \
+    def get_all_submodels_as_jsonables(self) \
             -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         # FIXME: Apply AAS Ident
-        return self._jsonable_submodels(self._get_all_submodel_references_by_shell(aasIdentifier))
+        return self._jsonable_submodels(self._get_all_submodels())
 
     def add_submodel_from_body(self, json):
         submodel = jsonization.submodel_from_jsonable(json)

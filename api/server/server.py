@@ -17,12 +17,11 @@ submodel_registry_router = submodel_registry_server.SubmodelRegistryRouter(centr
 
 # Register router
 # TODO: This can be done dynamically based on startup params
-app.include_router(submodel_router.router, prefix=prefix)
-app.include_router(aasx_file_router.router, prefix=prefix)
-app.include_router(aas_registry_router.router, prefix=prefix + "/blub")
-app.include_router(submodel_registry_router.router, prefix=prefix)
-# FIXME: Collision issues
-app.include_router(aas_router.router, prefix=prefix + "/test")
+app.include_router(submodel_router.router, prefix=prefix + "/submodels")
+app.include_router(aasx_file_router.router, prefix=prefix + "/aasx")
+app.include_router(aas_registry_router.router, prefix=prefix + "/registry")
+app.include_router(submodel_registry_router.router, prefix=prefix + "/submodels")
+app.include_router(aas_router.router, prefix=prefix + "/aas")
 
 # Start the server if this file is executed directly
 if __name__ == "__main__":

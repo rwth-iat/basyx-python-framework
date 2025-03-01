@@ -16,24 +16,24 @@ class AasxFileServerRouter:
 
     def _setup_routes(self):
         @self.router.get("/")
-        async def GetAllAASXPackageIds() -> Any:
-            return self.service.GetAllAASXPackageIds()
+        async def get_all_aasx() -> Any:
+            return self.service.get_all_aasx_package_ids()
 
         @self.router.get("/{aasx_package_id}")
-        async def GetAASXByPackageId(aasx_package_id: str) -> Any:
-            return self.service.GetAASXByPackageId(aasx_package_id)
+        async def get_aasx_by_package_id(aasx_package_id: str) -> Any:
+            return self.service.get_aasx_by_package_id(aasx_package_id)
 
         @self.router.post("/")
-        async def PostAASXPackage(request: Request) -> Any:
+        async def post_aasx_package(request: Request) -> Any:
             body = await request.json()
-            return self.service.PostAASXPackage(body)
+            return self.service.post_aasx_package(body)
 
         @self.router.put("/")
-        async def PutAASXByPackageId(request: Request) -> Any:
+        async def put_assx_package(request: Request) -> Any:
             body = await request.json()
-            return self.service.PutAASXByPackageId(body)
+            return self.service.put_aasx_by_package_id(body)
 
         @self.router.delete("/{aasx_package_id}")
-        async def DeleteAASXByPackageId(aasx_package_id: str) -> Any:
-            return self.service.DeleteAASXByPackageId(aasx_package_id)
+        async def delete_aasx_package_by_id(aasx_package_id: str) -> Any:
+            return self.service.delete_aasx_by_package_id(aasx_package_id)
         

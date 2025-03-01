@@ -26,22 +26,22 @@ class AasRouter(Pagination):
 
         @self.router.get("/shells/$reference")
         async def get_all_aas_reference() -> Any:
+            return {"message": "Content parameters are not supported yet."}
+
+        @self.router.get("/shells/{aas_identifier}")
+        async def get_aas_by_id(aas_identifier: str) -> Any:
+            return self.service.get_shell_jsonable_by_id(aas_identifier)
+
+        @self.router.put("/shells/{aas_identifier}")
+        async def update_aas(aas_identifier: str) -> Any:
             return {"message": ""}
 
-        @self.router.get("/shells/{aasIdentifier}")
-        async def get_aas_by_id(aasIdentifier: str) -> Any:
-            return {"message": ""}
+        @self.router.delete("/shells/{aas_identifier}")
+        async def delete_aas(aas_identifier: str) -> Any:
+            return self.service.delete_shell_by_id(aas_identifier)
 
-        @self.router.put("/shells/{aasIdentifier}")
-        async def update_aas(aasIdentifier: str) -> Any:
-            return {"message": ""}
-
-        @self.router.delete("/shells/{aasIdentifier}")
-        async def delete_aas(aasIdentifier: str) -> Any:
-            return {"message": ""}
-
-        @self.router.get("/shells/{aasIdentifier}/$reference")
-        async def get_aas_reference_by_id(aasIdentifier: str) -> Any:
+        @self.router.get("/shells/{aas_identifier}/$reference")
+        async def get_aas_reference_by_id(aas_identifier: str) -> Any:
             return {"message": ""}
 
         # TODO: Asset-information endpoints
