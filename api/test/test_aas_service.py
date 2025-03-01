@@ -1,3 +1,4 @@
+import os
 import json
 import unittest
 from fastapi.testclient import TestClient
@@ -9,12 +10,13 @@ BASE_URL = "/api/v3.0/"
 
 class TestAASService(unittest.TestCase):
     def setUp(self):
+        base_path = os.path.dirname(os.path.abspath(__file__))
         self.client = TestClient(app)
-        with open("./examples/submodel.json", encoding="utf-8") as f:
+        with open(os.path.join(base_path, "examples", "submodel.json"), encoding="utf-8") as f:
             self.submodel_example = json.load(f)
-        with open("./examples/aas.json", encoding="utf-8") as f:
+        with open(os.path.join(base_path, "examples", "aas.json"), encoding="utf-8") as f:
             self.aas_example = json.load(f)
-        with open("./examples/submodel_modified.json", encoding="utf-8") as f:
+        with open(os.path.join(base_path, "examples", "submodel_modified.json"), encoding="utf-8") as f:
             self.test_submodel_modified = json.load(f)
 
         self.submodel_example_id = self.submodel_example["id"]

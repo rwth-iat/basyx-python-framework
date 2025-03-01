@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 
 from server import app
 from .examples.aasx_packages import aasx_package_json
-from .examples.submodels import test_submodel_modified, test_submodel
 
 client = TestClient(app)
 BASE_URL = "/api/v3.0/"
