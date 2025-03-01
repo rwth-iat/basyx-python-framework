@@ -6,7 +6,8 @@ from fastapi import APIRouter, Request, HTTPException
 from server.services.submodel_service import SubmodelService
 from basyx import ObjectStore
 
-from api.server.utils.pagination import Pagination
+from server.utils.pagination import Pagination
+from server.utils.decorator import limited
 
 
 class SubmodelRouter(Pagination):

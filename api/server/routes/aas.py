@@ -3,9 +3,9 @@ from typing import Any
 from aas_core3.types import Identifiable
 from fastapi import APIRouter, Request
 
-from api.server.services.aas_service import AasService
-from api.server.utils.pagination import Pagination
-from sdk.basyx import ObjectStore
+from server.services.aas_service import AasService
+from server.utils.pagination import Pagination
+from basyx import ObjectStore
 
 
 class AasRouter(Pagination):

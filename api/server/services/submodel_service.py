@@ -1,4 +1,4 @@
-from typing import Any, MutableMapping, List, Union
+from typing import Any, MutableMapping, List, Union, Type
 
 from aas_core3 import jsonization
 from aas_core3.types import Submodel, SubmodelElement, AssetAdministrationShell
@@ -15,12 +15,12 @@ class SubmodelService:
     def _get_all_submodels(self) -> List[Type]:
         return self.obj_store.get_identifiables_by_type(Submodel)
 
-    def _get_all_submodel_references_by_shell(self, aasIdentifier: str) -> List[Type]:
-        shell = self.obj_store.get(aasIdentifier)
+    def _get_all_submodel_references_by_shell(self, aas_identifier: str) -> List[Type]:
+        shell = self.obj_store.get(aas_identifier)
         if isinstance(shell, AssetAdministrationShell):
             return shell.submodels  # FIXME: Typing issues, should this be (safe) casted?
         else:
-            raise HTTPException(status_code=404, detail="AAS " + aasIdentifier + " not found")
+            raise HTTPException(status_code=404, detail="AAS " + aas_identifier + " not found")
 
     def _jsonable_submodels(self, submodels: List[Submodel]) \
             -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:

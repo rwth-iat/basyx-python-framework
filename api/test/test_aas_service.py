@@ -2,12 +2,12 @@ import json
 import unittest
 from fastapi.testclient import TestClient
 
-from api.server import app
+from server import app
 
 BASE_URL = "/api/v3.0/"
 
 
-class TestFastAPIEndpoints(unittest.TestCase):
+class TestAASService(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
         with open("./examples/submodel.json", encoding="utf-8") as f:
@@ -21,52 +21,6 @@ class TestFastAPIEndpoints(unittest.TestCase):
         self.shell_example_id = self.aas_example["id"]
         self.invalid_submodel_id = "some_id"
         self.invalid_aas_example_id = "some_other_id"
-
-    # Test submodel items
-    def test_get_all_submodels(self):
-        response = self.client.get(BASE_URL + "submodels")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [])
-
-        # Setup
-        self.client.post(BASE_URL + "submodels", json=self.submodel_example)
-
-        response = self.client.get(BASE_URL + "submodels")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [self.submodel_example])
-
-        # Teardown
-        self.client.delete(BASE_URL + "submodels/" + self.submodel_example_id)
-
-    def test_post_submodel(self):
-        response = self.client.post(BASE_URL + "submodels", json=self.submodel_example)
-        self.assertEqual(response.status_code, 200)
-        self.client.delete(BASE_URL + "submodels/" + self.submodel_example_id)
-
-    def test_get_specific_submodel(self):
-        # Setup
-        self.client.post(BASE_URL + "submodels", json=self.submodel_example)
-
-        response_test_undefined = self.client.get(BASE_URL + "submodels/" + self.invalid_submodel_id)
-        response_test_entry = self.client.get(BASE_URL + "submodels/" + self.submodel_example_id)
-
-        self.assertEqual(response_test_undefined.status_code, 404)
-        self.assertEqual(response_test_entry.status_code, 200)
-        self.assertEqual(response_test_entry.json(), self.submodel_example)
-
-        # Teardown
-        self.client.delete(BASE_URL + "submodels/" + self.submodel_example_id + "/")
-
-    def test_get_specific_submodel_element(self):
-        # Setup
-        self.client.post(BASE_URL + "submodels", json=self.submodel_example)
-
-        response = self.client.get(
-            BASE_URL + "submodels/" + self.submodel_example_id + "/submodel-elements/" + "list_1")
-        self.assertEqual(response.status_code, 200)
-
-        # Teardown
-        self.client.delete(BASE_URL + "submodels/" + self.submodel_example_id + "/")
 
     def test_aas_post(self):
         response = self.client.post(BASE_URL + "aas/shells", json=self.aas_example)
