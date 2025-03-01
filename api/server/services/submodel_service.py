@@ -1,7 +1,7 @@
 from typing import Any, MutableMapping, List, Union
 
 from aas_core3 import jsonization
-from aas_core3.types import Submodel, SubmodelElement
+from aas_core3.types import Submodel, SubmodelElement, AssetAdministrationShell
 from fastapi import HTTPException
 
 from basyx import ObjectStore
@@ -12,8 +12,15 @@ class SubmodelService:
         self.obj_store = global_object_store
 
     # General helper functions
-    def _get_all_submodels(self) -> List[Submodel]:
-        return [item for item in self.obj_store if isinstance(item, Submodel)]
+    def _get_all_submodels(self) -> List[Type]:
+        return self.obj_store.get_identifiables_by_type(Submodel)
+
+    def _get_all_submodel_references_by_shell(self, aasIdentifier: str) -> List[Type]:
+        shell = self.obj_store.get(aasIdentifier)
+        if isinstance(shell, AssetAdministrationShell):
+            return shell.submodels  # FIXME: Typing issues, should this be (safe) casted?
+        else:
+            raise HTTPException(status_code=404, detail="AAS " + aasIdentifier + " not found")
 
     def _jsonable_submodels(self, submodels: List[Submodel]) \
             -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
@@ -21,7 +28,7 @@ class SubmodelService:
 
     def _get_submodel_by_id(self, submodel_id):
         submodel = self.obj_store.get(submodel_id)
-        if submodel is None:
+        if submodel is None or not isinstance(submodel, Submodel):
             raise HTTPException(status_code=404, detail="Submodel with id " + submodel_id + " not found")
         return submodel
 
@@ -67,6 +74,7 @@ class SubmodelService:
         return {"message": "Submodel with id " + submodel_id + " deleted successfully"}
 
     def get_submodel_elements(self, submodel_id):
+        # FIXME: Has to respect hierarchy!!
         submodel = self._get_submodel_by_id(submodel_id)
         elements = []
         for element in submodel.descend():
@@ -98,14 +106,16 @@ class SubmodelService:
             submodel.submodel_elements.append(submodel_element)
             return jsonization.to_jsonable(submodel_element)
         else:
-            raise HTTPException(status_code=400, detail="Submodel element with id " + submodel_element.id_short + " already exists")
+            raise HTTPException(status_code=400,
+                                detail="Submodel element with id " + submodel_element.id_short + " already exists")
 
     def put_submodel_element(self, submodel_id, body):
         submodel = self._get_submodel_by_id(submodel_id)
         submodel_element = jsonization.submodel_element_from_jsonable(body)
         existing_submodel_element = self._get_submodel_element_by_id_short(submodel_id, submodel_element.id_short)
         if existing_submodel_element is None:
-            raise HTTPException(status_code=404, detail="Submodel element with id " + submodel_element.id_short + " does not exist")
+            raise HTTPException(status_code=404,
+                                detail="Submodel element with id " + submodel_element.id_short + " does not exist")
         else:
             submodel.submodel_elements.remove(existing_submodel_element)
             submodel.submodel_elements.append(submodel_element)

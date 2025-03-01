@@ -16,23 +16,23 @@ class SubmodelRegistryRouter:
 
     def _setup_routes(self):
         @self.router.get("/")
-        async def GetAllSubmodelDescriptors() -> Any:
-            return self.service.GetAllSubmodelDescriptors()
+        async def get_all_submodel_descriptors() -> Any:
+            return self.service.get_all_submodel_descriptors()
 
         @self.router.get("/{submodel_id}")
-        async def GetSubmodelDescriptorById(submodel_id: str) -> Any:
-            return self.service.GetSubmodelDescriptorById(submodel_id)
+        async def get_submodel_descriptor_by_id(submodel_id: str) -> Any:
+            return self.service.get_submodel_descriptor_by_id(submodel_id)
 
         @self.router.post("/")
-        async def PostSubmodelDescriptor(request: Request) -> Any:
+        async def post_submodel_descriptor(request: Request) -> Any:
             body = await request.json()
-            return self.service.PostSubmodelDescriptor(body)
+            return self.service.post_submodel_descriptor(body)
 
         @self.router.put("/")
-        async def PutSubmodelDescriptorById(request: Request) -> Any:
+        async def put_submodel_descriptor_by_id(request: Request) -> Any:
             body = await request.json()
-            return self.service.PutSubmodelDescriptorById(body)
+            return self.service.put_submodel_descriptor_by_id(body)
 
         @self.router.delete("/{submodel_id}")
-        async def DeleteSubmodelDescriptorById(submodel_id: str) -> Any:
-            return self.service.DeleteSubmodelDescriptorById(submodel_id)
+        async def delete_submodel_descriptor_by_id(submodel_id: str) -> Any:
+            return self.service.delete_submodel_descriptor_by_id(submodel_id)
