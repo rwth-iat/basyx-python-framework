@@ -14,17 +14,14 @@ class TestSubmodelService(unittest.TestCase):
     def setUp(self):
         base_path = os.path.dirname(os.path.abspath(__file__))
         self.client = TestClient(app)
+
         with open(os.path.join(base_path, "examples", "submodel.json"), encoding="utf-8") as f:
             self.submodel_example = json.load(f)
-        with open(os.path.join(base_path, "examples", "aas.json"), encoding="utf-8") as f:
-            self.aas_example = json.load(f)
         with open(os.path.join(base_path, "examples", "submodel_modified.json"), encoding="utf-8") as f:
             self.test_submodel_modified = json.load(f)
 
         self.submodel_example_id = self.submodel_example["id"]
-        self.shell_example_id = self.aas_example["id"]
         self.invalid_submodel_id = "some_id"
-        self.invalid_aas_example_id = "some_other_id"
 
     # Test submodel items
     def test_get_all_submodels(self):

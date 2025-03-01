@@ -12,17 +12,12 @@ class TestAASService(unittest.TestCase):
     def setUp(self):
         base_path = os.path.dirname(os.path.abspath(__file__))
         self.client = TestClient(app)
-        with open(os.path.join(base_path, "examples", "submodel.json"), encoding="utf-8") as f:
-            self.submodel_example = json.load(f)
+
         with open(os.path.join(base_path, "examples", "aas.json"), encoding="utf-8") as f:
             self.aas_example = json.load(f)
-        with open(os.path.join(base_path, "examples", "submodel_modified.json"), encoding="utf-8") as f:
-            self.test_submodel_modified = json.load(f)
 
-        self.submodel_example_id = self.submodel_example["id"]
         self.shell_example_id = self.aas_example["id"]
-        self.invalid_submodel_id = "some_id"
-        self.invalid_aas_example_id = "some_other_id"
+        self.invalid_shell_example_id = "some_other_id"
 
     def test_aas_post(self):
         response = self.client.post(BASE_URL + "aas/shells", json=self.aas_example)
@@ -50,7 +45,7 @@ class TestAASService(unittest.TestCase):
         # Setup
         self.client.post(BASE_URL + "aas/shells", json=self.aas_example)
 
-        response_test_undefined = self.client.get(BASE_URL + "aas/shells/" + self.invalid_aas_example_id)
+        response_test_undefined = self.client.get(BASE_URL + "aas/shells/" + self.invalid_shell_example_id)
         response_test_entry = self.client.get(BASE_URL + "aas/shells/" + self.shell_example_id)
 
         self.assertEqual(response_test_undefined.status_code, 404)
