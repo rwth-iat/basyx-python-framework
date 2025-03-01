@@ -38,7 +38,7 @@ class TestFastAPIEndpoints(unittest.TestCase):
         self.client.delete(BASE_URL + "aasx/" + self.test_aasx_id)
 
     def test_post_aasx_package(self):
-        response = client.post(BASE_URL + "aasx/", json=self.aasx_json)
+        response = client.post(BASE_URL + "aasx", json=self.aasx_json)
         self.assertEqual(response.status_code, 200)
 
         # Teardown
@@ -48,7 +48,7 @@ class TestFastAPIEndpoints(unittest.TestCase):
         # Setup
         self.client.post(BASE_URL + "aasx", json=self.aasx_json)
 
-        response_test_entry = client.get(BASE_URL + "aasx/" + self.test_aasx_id + "/")
+        response_test_entry = client.get(BASE_URL + "aasx/" + self.test_aasx_id)
         self.assertEqual(response_test_entry.status_code, 200)
         self.assertEqual(response_test_entry.json(), self.aasx_json)
 

@@ -15,7 +15,7 @@ class AasxFileServerRouter:
         self._setup_routes()
 
     def _setup_routes(self):
-        @self.router.get("/")
+        @self.router.get("")
         async def get_all_aasx() -> Any:
             return self.service.get_all_aasx_package_ids()
 
@@ -23,12 +23,12 @@ class AasxFileServerRouter:
         async def get_aasx_by_package_id(aasx_package_id: str) -> Any:
             return self.service.get_aasx_by_package_id(aasx_package_id)
 
-        @self.router.post("/")
+        @self.router.post("")
         async def post_aasx_package(request: Request) -> Any:
             body = await request.json()
             return self.service.post_aasx_package(body)
 
-        @self.router.put("/")
+        @self.router.put("")
         async def put_assx_package(request: Request) -> Any:
             body = await request.json()
             return self.service.put_aasx_by_package_id(body)
