@@ -53,7 +53,7 @@ class TestAASService(unittest.TestCase):
         self.assertEqual(response_test_entry.json(), self.aas_example)
 
         # Teardown
-        self.client.delete(BASE_URL + "submodels/" + self.shell_example_id + "/")
+        self.client.delete(BASE_URL + "aas/shells/" + self.shell_example_id)
 
     # FIXME: Technically a test_delete_shell would be added here. Is this really necessary?
 
