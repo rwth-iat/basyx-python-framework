@@ -11,7 +11,7 @@ class SubmodelRegistryServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def get_all_submodel_descriptors(self) -> list[str]:
+    def get_all_submodel_descriptors(self) -> List[str]:
         #print(self.obj_store.__dict__)
 
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
@@ -40,7 +40,7 @@ class SubmodelRegistryServerService:
         return [jsonization.to_jsonable(descriptor) for descriptor in submodel_descriptors_store]
 
     def get_submodel_descriptor_by_id(self, descriptor_id) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         try:
             aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
         except KeyError as e:

@@ -11,11 +11,11 @@ class AasxFileServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def get_all_aasx_package_ids(self) -> list[str]:
+    def get_all_aasx_package_ids(self) -> List[str]:
         return [item.id for item in self.obj_store if isinstance(item, AssetAdministrationShell)]
 
     def get_aasx_by_package_id(self, package_id) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         aasx_package = self.obj_store.get_identifiable(package_id)
         assert isinstance(aasx_package, AssetAdministrationShell)
         return jsonization.to_jsonable(aasx_package)

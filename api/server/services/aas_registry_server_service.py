@@ -11,7 +11,7 @@ class AasRegistryServerService:
     def __init__(self, global_object_store: ObjectStore):
         self.obj_store = global_object_store
 
-    def get_all_asset_administration_shell_descriptors(self) -> list[str]:
+    def get_all_asset_administration_shell_descriptors(self) -> List[str]:
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
         print(all_descriptors.__dict__)
         print(all_descriptors)
@@ -38,7 +38,7 @@ class AasRegistryServerService:
         return [jsonization.to_jsonable(descriptor) for descriptor in aas_descriptors_store]
 
     def get_asset_administration_shell_descriptor_by_id(self, descriptor_id) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
         assert isinstance(aas_descriptor, ConceptDescription)
         return jsonization.to_jsonable(aas_descriptor)

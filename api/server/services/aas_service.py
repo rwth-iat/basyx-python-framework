@@ -22,8 +22,8 @@ class AasService:
             raise HTTPException(status_code=404, detail="Submodel with id " + aas_identifier + " not found")
         return shell
 
-    def _jsonable_shells(self, submodels: list[AssetAdministrationShell]) \
-            -> list[bool | int | float | str | list[Any] | MutableMapping[str, Any]]:
+    def _jsonable_shells(self, submodels: List[AssetAdministrationShell]) \
+            -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
         return [jsonization.to_jsonable(submodel) for submodel in submodels]
 
     # Endpoint specific logic
