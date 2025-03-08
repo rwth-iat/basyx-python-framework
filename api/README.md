@@ -24,7 +24,7 @@ serialization settings.
 | `/aas/shells`                                             | GET       | Returns all Asset Administration Shells                                | ✅      |
 | `/aas/shells`                                             | POST      | Creates a new Asset Administration Shell                               | ✅      |
 | `/aas/shells/{aasIdentifier}`                             | GET       | Returns an Asset Administration Shell by ID                            | ✅      |
-| `/aas/shells/{aasIdentifier}`                             | PUT       | Updates an existing Asset Administration Shell                         | 📅     |
+| `/aas/shells/{aasIdentifier}`                             | PUT       | Updates an existing Asset Administration Shell                         | ✅      |
 | `/aas/shells/{aasIdentifier}`                             | DELETE    | Deletes an Asset Administration Shell                                  | ✅      |
 | `/aas/shells/{aasIdentifier}/asset-information`           | GET       | Returns the Asset Information of a specific Asset Administration Shell | 📅     |
 | `/aas/shells/{aasIdentifier}/asset-information`           | PUT       | Updates the Asset Information of a specific Asset Administration Shell | 📅     |

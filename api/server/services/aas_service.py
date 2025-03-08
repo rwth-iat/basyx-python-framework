@@ -1,6 +1,6 @@
 from typing import List, Type, Any, MutableMapping, Union
 
-from aas_core3 import types, jsonization
+from aas_core3 import jsonization
 from aas_core3.types import AssetAdministrationShell
 from fastapi import HTTPException
 
@@ -43,6 +43,15 @@ class AasService:
             # Wenn anders in Spezifikation, Stacktrace in server log
             raise HTTPException(status_code=400, detail=str(e))
         return {"message": "Shell processed"}
+
+    def put_shell_by_id(self, aas_identifier, json):
+        shell = self._get_shell_by_id(aas_identifier)
+        new_shell = jsonization.asset_administration_shell_from_jsonable(json)
+        if shell.id != new_shell.id:
+            raise HTTPException(403, "Shell with id " + aas_identifier + " does not match")
+        self.obj_store.discard(shell)
+        self.obj_store.add(new_shell)
+        return jsonization.to_jsonable(new_shell)
 
     def delete_shell_by_id(self, aas_identifier):
         shell = self._get_shell_by_id(aas_identifier)

@@ -33,8 +33,10 @@ class AasRouter(Pagination):
             return self.service.get_shell_jsonable_by_id(aas_identifier)
 
         @self.router.put("/shells/{aas_identifier}")
-        async def update_aas(aas_identifier: str) -> Any:
-            return {"message": ""}
+        async def put_aas(aas_identifier: str, request: Request) -> Any:
+            # Update shell with given id
+            body = await request.json()
+            return self.service.put_shell_by_id(aas_identifier, body)
 
         @self.router.delete("/shells/{aas_identifier}")
         async def delete_aas(aas_identifier: str) -> Any:

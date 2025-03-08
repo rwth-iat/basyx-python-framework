@@ -16,6 +16,10 @@ class TestAASService(unittest.TestCase):
         with open(os.path.join(base_path, "examples", "aas.json"), encoding="utf-8") as f:
             self.aas_example = json.load(f)
 
+        # FIXME: modified AAS should contain more complex types but deserialization seems to fail
+        with open(os.path.join(base_path, "examples", "aas_modified.json"), encoding="utf-8") as f:
+            self.aas_example_modified = json.load(f)
+
         self.shell_example_id = self.aas_example["id"]
         self.invalid_shell_example_id = "some_other_id"
 
@@ -51,6 +55,23 @@ class TestAASService(unittest.TestCase):
         self.assertEqual(response_test_undefined.status_code, 404)
         self.assertEqual(response_test_entry.status_code, 200)
         self.assertEqual(response_test_entry.json(), self.aas_example)
+
+        # Teardown
+        self.client.delete(BASE_URL + "aas/shells/" + self.shell_example_id)
+
+    def test_put_shell(self):
+        # Setup and Preconditions
+        self.assertNotEqual(self.aas_example, self.aas_example_modified)
+        self.client.post(BASE_URL + "aas/shells", json=self.aas_example)
+
+        response_normal = self.client.get(BASE_URL + "aas/shells/" + self.shell_example_id)
+        self.assertEqual(response_normal.json(), self.aas_example)
+
+        response = self.client.put(BASE_URL + "aas/shells/" + self.shell_example_id, json=self.aas_example_modified)
+        self.assertEqual(response.status_code, 200)
+        response_overwritten = self.client.get(BASE_URL + "aas/shells/" + self.shell_example_id)
+        self.assertEqual(response_overwritten.status_code, 200)
+        self.assertEqual(response_overwritten.json(), self.aas_example_modified)
 
         # Teardown
         self.client.delete(BASE_URL + "aas/shells/" + self.shell_example_id)
