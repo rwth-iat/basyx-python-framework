@@ -60,13 +60,13 @@ serialization settings.
 | `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | DELETE    | Delete qualifiers of a specific type for specific elements by short ID       | 📅     |
 
 ## AASX File Server Interface and Operations
-| Endpoint                  | Operation | Description | Status |
-|---------------------------|-----------|-------------|--------|
-| `/GetAllAASXPackageIds/`  | GET       | TODO        | ✅      |
-| `/GetAASXByPackageId/`    | POST      | TODO        | ✅      |
-| `/PostAASXPackage/`       | POST      | TODO        | ✅      |
-| `/PutAASXByPackageId/`    | PUT       | TODO        | ✅      |
-| `/DeleteAASXByPackageId/` | DELETE    | TODO        | ✅      |
+| Endpoint                  | Operation | Description                                        | Status |
+|---------------------------|-----------|----------------------------------------------------|--------|
+| `/aasx`                   | GET       | Returns all available AASX packages at the server. | ✅      |
+| `/aasx/{aasx_package_id}` | GET       | Returns a specific AASX package from the server.   | ✅      |
+| `/aasx`                   | POST      | Creates an AASX package at the server.             | ✅      |
+| `/aasx`                   | PUT       | Replaces the AASX package at the server.           | ✅      |
+| `/aasx/{aasx_package_id}` | DELETE    | Deletes a specific AASX package at the server.     | ✅      |
 
 ## AAS Registry Service
 | Endpoint                             | Operation | Description                                        | Status |
