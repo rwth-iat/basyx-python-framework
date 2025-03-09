@@ -42,13 +42,27 @@ class AasRouter(Pagination):
         async def delete_aas(aas_identifier: str) -> Any:
             return self.service.delete_shell_by_id(aas_identifier)
 
-        @self.router.get("/shells/{aas_identifier}/$reference")
+        @self.router.get("/shells/{aas_identifier}/asset-information")
         async def get_aas_reference_by_id(aas_identifier: str) -> Any:
-            return {"message": ""}
+            return self.service.get_asset_information_by_id_as_jsonable(aas_identifier)
+
+        @self.router.put("/shells/{aas_identifier}/asset-information")
+        async def get_aas_reference_by_id(aas_identifier: str, request: Request) -> Any:
+            body = await request.json()
+            return self.service.put_asset_information_by_id_from_jsonable(aas_identifier, body)
+
+        @self.router.get("/shells/{aas_identifier}/asset-information/thumbnail")
+        async def get_aas_thumbnail_by_id(aas_identifier: str) -> Any:
+            return self.service.get_thumbnail_by_id(aas_identifier)
+
+        @self.router.put("/shells/{aas_identifier}/asset-information/thumbnail")
+        async def get_aas_reference_by_id(aas_identifier: str, request: Request) -> Any:
+            body = await request.json()
+            return self.service.put_thumbnail_by_id(aas_identifier, body)
+
+        @self.router.delete("/shells/{aas_identifier}/asset-information/thumbnail")
+        async def delete_aas(aas_identifier: str) -> Any:
+            return self.service.delete_thumbnail_by_id(aas_identifier)
 
         # TODO: Asset-information endpoints
-        # /shells/{aasIdentifier}/asset-information GET
-        # /shells/{aasIdentifier}/asset-information PUT
-        # /shells/{aasIdentifier}/asset-information/thumbnail GET
-        # /shells/{aasIdentifier}/asset-information/thumbnail PUT
-        # /shells/{aasIdentifier}/asset-information/thumbnail DELETE
+        # /shells/{aas_identifier}/$reference GET

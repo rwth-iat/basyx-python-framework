@@ -15,9 +15,9 @@ class TestSubmodelService(unittest.TestCase):
         base_path = os.path.dirname(os.path.abspath(__file__))
         self.client = TestClient(app)
 
-        with open(os.path.join(base_path, "examples", "submodel.json"), encoding="utf-8") as f:
+        with open(os.path.join(base_path, "examples/submodel", "submodel.json"), encoding="utf-8") as f:
             self.submodel_example = json.load(f)
-        with open(os.path.join(base_path, "examples", "submodel_modified.json"), encoding="utf-8") as f:
+        with open(os.path.join(base_path, "examples/submodel", "submodel_modified.json"), encoding="utf-8") as f:
             self.test_submodel_modified = json.load(f)
 
         self.submodel_example_id = self.submodel_example["id"]

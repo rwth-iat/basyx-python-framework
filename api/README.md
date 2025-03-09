@@ -19,18 +19,18 @@ will be implemented as separate routes, but are not listed in this table as it's
 serialization settings.
 
 ## AAS Service
-| Endpoint                                                  | Operation | Description                                                            | Status |
-|-----------------------------------------------------------|-----------|------------------------------------------------------------------------|--------|
-| `/aas/shells`                                             | GET       | Returns all Asset Administration Shells                                | ✅      |
-| `/aas/shells`                                             | POST      | Creates a new Asset Administration Shell                               | ✅      |
-| `/aas/shells/{aasIdentifier}`                             | GET       | Returns an Asset Administration Shell by ID                            | ✅      |
-| `/aas/shells/{aasIdentifier}`                             | PUT       | Updates an existing Asset Administration Shell                         | ✅      |
-| `/aas/shells/{aasIdentifier}`                             | DELETE    | Deletes an Asset Administration Shell                                  | ✅      |
-| `/aas/shells/{aasIdentifier}/asset-information`           | GET       | Returns the Asset Information of a specific Asset Administration Shell | 📅     |
-| `/aas/shells/{aasIdentifier}/asset-information`           | PUT       | Updates the Asset Information of a specific Asset Administration Shell | 📅     |
-| `/aas/shells/{aasIdentifier}/asset-information/thumbnail` | GET       | Returns the thumbnail file of the Asset Information                    | 📅     |
-| `/aas/shells/{aasIdentifier}/asset-information/thumbnail` | PUT       | Replaces the thumbnail file of the Asset Information                   | 📅     |
-| `/aas/shells/{aasIdentifier}/asset-information/thumbnail` | DELETE    | Deletes the thumbnail file of the Asset Information                    | 📅     |
+| Endpoint                                                   | Operation | Description                                                             | Status |
+|------------------------------------------------------------|-----------|-------------------------------------------------------------------------|--------|
+| `/aas/shells`                                              | GET       | Returns all Asset Administration Shells                                 | ✅      |
+| `/aas/shells`                                              | POST      | Creates a new Asset Administration Shell                                | ✅      |
+| `/aas/shells/{aas_identifier}`                             | GET       | Returns an Asset Administration Shell by ID                             | ✅      |
+| `/aas/shells/{aas_identifier}`                             | PUT       | Updates an existing Asset Administration Shell                          | ✅      |
+| `/aas/shells/{aas_identifier}`                             | DELETE    | Deletes an Asset Administration Shell                                   | ✅      |
+| `/aas/shells/{aas_identifier}/asset-information`           | GET       | Returns the Asset Information of a specific Asset Administration Shell  | ✅      |
+| `/aas/shells/{aas_identifier}/asset-information`           | PUT       | Replaces the Asset Information of a specific Asset Administration Shell | ✅      |
+| `/aas/shells/{aas_identifier}/asset-information/thumbnail` | GET       | Returns the thumbnail file of the Asset Information                     | ✅      |
+| `/aas/shells/{aas_identifier}/asset-information/thumbnail` | PUT       | Replaces the thumbnail file of the Asset Information                    | ✅      |
+| `/aas/shells/{aas_identifier}/asset-information/thumbnail` | DELETE    | Deletes the thumbnail file of the Asset Information                     | ✅      |
 
 
 ## Submodel Service

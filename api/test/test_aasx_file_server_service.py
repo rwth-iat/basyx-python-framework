@@ -15,7 +15,7 @@ class TestFastAPIEndpoints(unittest.TestCase):
         base_path = os.path.dirname(os.path.abspath(__file__))
         self.client = TestClient(app)
 
-        with open(os.path.join(base_path, "examples", "aasx.json"), encoding="utf-8") as f:
+        with open(os.path.join(base_path, "examples/aasx", "aasx.json"), encoding="utf-8") as f:
             self.aasx_json = json.load(f)
 
         self.test_aasx_id = self.aasx_json["id"]

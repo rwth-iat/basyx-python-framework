@@ -1,7 +1,10 @@
 {
   "id": "urn:x-test:aas1",
   "assetInformation": {
-    "assetKind": "Instance"
+    "assetKind": "Type",
+    "defaultThumbnail": {
+      "path": "blub"
+    }
   },
   "modelType": "AssetAdministrationShell"
 }

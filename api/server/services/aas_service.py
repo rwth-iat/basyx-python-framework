@@ -1,7 +1,7 @@
 from typing import List, Type, Any, MutableMapping, Union
 
 from aas_core3 import jsonization
-from aas_core3.types import AssetAdministrationShell
+from aas_core3.types import AssetAdministrationShell, AssetInformation
 from fastapi import HTTPException
 
 from basyx import ObjectStore
@@ -57,3 +57,34 @@ class AasService:
         shell = self._get_shell_by_id(aas_identifier)
         self.obj_store.discard(shell)
         return {"message": "AssetAdministrationShell with id " + aas_identifier + " deleted successfully"}
+
+    def get_asset_information_by_id_as_jsonable(self, aas_identifier):
+        shell = self._get_shell_by_id(aas_identifier)
+        return jsonization.to_jsonable(shell.asset_information)
+
+    def put_asset_information_by_id_from_jsonable(self, aas_identifier, json):
+        shell = self._get_shell_by_id(aas_identifier)
+        self.obj_store.discard(shell)
+        new_information = jsonization.asset_information_from_jsonable(json)
+        shell.asset_information = new_information
+        self.obj_store.add(shell)
+        return jsonization.to_jsonable(shell)
+
+    def get_thumbnail_by_id(self, aas_identifier):
+        shell = self._get_shell_by_id(aas_identifier)
+        return jsonization.to_jsonable(shell.asset_information.default_thumbnail)
+
+    def put_thumbnail_by_id(self, aas_identifier, thumbnail):
+        shell = self._get_shell_by_id(aas_identifier)
+        self.obj_store.discard(shell)
+        new_thumbnail = jsonization.resource_from_jsonable(thumbnail)
+        shell.asset_information.default_thumbnail = new_thumbnail
+        self.obj_store.add(shell)
+        return jsonization.to_jsonable(shell.asset_information.default_thumbnail)
+
+    def delete_thumbnail_by_id(self, ass_identifier):
+        shell = self._get_shell_by_id(ass_identifier)
+        self.obj_store.discard(shell)
+        shell.asset_information.default_thumbnail = None
+        self.obj_store.add(shell)
+        return jsonization.to_jsonable(shell)

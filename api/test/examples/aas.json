@@ -1,7 +1,0 @@
-{
-    "id": "urn:x-test:aas1",
-    "assetInformation": {
-        "assetKind": "Type"
-    },
-    "modelType": "AssetAdministrationShell"
-}
