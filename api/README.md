@@ -34,30 +34,31 @@ serialization settings.
 
 
 ## Submodel Service
-| Endpoint                                                                                          | Operation | Description                                                                  | Status |
-|---------------------------------------------------------------------------------------------------|-----------|------------------------------------------------------------------------------|--------|
-| `/shells/{aasIdentifier}/submodel-refs`                                                           | GET       | Retrieve all submodels                                                       | ✅      |
-| `/shells/{aasIdentifier}/submodel-refs`                                                           | POST      | Create a new submodel                                                        | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}`                                                           | GET       | Retrieve a submodel by ID                                                    | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}`                                                           | PUT       | Update a submodel by ID                                                      | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}`                                                           | DELETE    | Delete a submodel by ID                                                      | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements`                                         | GET       | Retrieve all elements of a specific submodel                                 | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements`                                         | POST      | Create new elements in a specific submodel                                   | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}`                             | GET       | Retrieve specific elements by short ID in a submodel                         | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}`                             | POST      | Create specific elements by short ID in a submodel                           | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}`                             | PUT       | Update specific elements by short ID in a submodel                           | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}`                             | DELETE    | Delete specific elements by short ID in a submodel                           | ✅      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}`                             | PATCH     | Partially update specific elements by short ID in a submodel                 | ❌      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/attachment`                  | GET       | Retrieve attachments of specific elements by short ID                        | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/attachment`                  | PUT       | Update attachments of specific elements by short ID                          | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/attachment`                  | DELETE    | Delete attachments of specific elements by short ID                          | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/invoke`                      | POST      | Invoke operations on specific elements by short ID                           | ❌      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/invoke-async`                | POST      | Asynchronously invoke operations on specific elements by short ID            | ❌      |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/qualifiers`                  | GET       | Retrieve qualifiers for specific elements by short ID                        | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/qualifiers`                  | POST      | Add qualifiers to specific elements by short ID                              | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | GET       | Retrieve qualifiers of a specific type for specific elements by short ID     | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | PUT       | Update qualifiers of a specific type for specific elements by short ID       | 📅     |
-| `/shells/{aasIdentifier}/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | DELETE    | Delete qualifiers of a specific type for specific elements by short ID       | 📅     |
+| Endpoint                                                                             | Operation | Description                                                              | Status |
+|--------------------------------------------------------------------------------------|-----------|--------------------------------------------------------------------------|--------|
+| `/submodels`                                                                         | GET       | Retrieve all submodels                                                   | ✅      |
+| `/submodels`                                                                         | POST      | Create a new submodel                                                    | ✅      |
+| `/submodels/{submodel_id}`                                                           | GET       | Retrieve a submodel by ID                                                | ✅      |
+| `/submodels/{submodel_id}`                                                           | PUT       | Replace a submodel by ID                                                 | ✅      |
+| `/submodels/{submodel_id}`                                                           | PATCH     | Update a submodel by ID                                                  | 📅     |
+| `/submodels/{submodel_id}`                                                           | DELETE    | Delete a submodel by ID                                                  | ✅      |
+| `/submodels/{submodel_id}/submodel-elements`                                         | GET       | Retrieve all elements of a specific submodel                             | ✅      |
+| `/submodels/{submodel_id}/submodel-elements`                                         | POST      | Create new elements in a specific submodel                               | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | GET       | Retrieve specific elements by short ID in a submodel                     | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | POST      | Create specific elements by short ID in a submodel                       | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | PUT       | Update specific elements by short ID in a submodel                       | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | DELETE    | Delete specific elements by short ID in a submodel                       | ✅      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}`                             | PATCH     | Partially update specific elements by short ID in a submodel             | ❌      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/attachment`                  | GET       | Retrieve attachments of specific elements by short ID                    | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/attachment`                  | PUT       | Update attachments of specific elements by short ID                      | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/attachment`                  | DELETE    | Delete attachments of specific elements by short ID                      | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/invoke`                      | POST      | Invoke operations on specific elements by short ID                       | ❌      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/invoke-async`                | POST      | Asynchronously invoke operations on specific elements by short ID        | ❌      |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/qualifiers`                  | GET       | Retrieve qualifiers for specific elements by short ID                    | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/qualifiers`                  | POST      | Add qualifiers to specific elements by short ID                          | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | GET       | Retrieve qualifiers of a specific type for specific elements by short ID | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | PUT       | Update qualifiers of a specific type for specific elements by short ID   | 📅     |
+| `/submodels/{submodel_id}/submodel-elements/{id_shorts}/qualifiers/{qualifier_type}` | DELETE    | Delete qualifiers of a specific type for specific elements by short ID   | 📅     |
 
 ## AASX File Server Interface and Operations
 | Endpoint                  | Operation | Description                                        | Status |
