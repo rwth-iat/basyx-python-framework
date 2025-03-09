@@ -94,8 +94,9 @@ class SubmodelRouter(Pagination):
             raise HTTPException(status_code=501, detail="This route is yet implemented!")
 
         @self.router.post("/{submodel_identifier}/submodel-elements")
-        async def post_submodel_elements(submodel_identifier: str) -> Any:
-            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
+        async def post_submodel_elements(submodel_identifier: str, request: Request) -> Any:
+            body = await request.json()
+            return self.service.post_submodel_element(submodel_identifier, body)
 
         @self.router.get("/{submodel_identifier}/submodel-elements")
         async def get_submodel_submodel_elements(submodel_identifier: str) -> Any:
@@ -125,8 +126,7 @@ class SubmodelRouter(Pagination):
 
         @self.router.post("/{submodel_identifier}/submodel-elements/{id_short_path}")
         async def post_submodel_submodel_elements_id_short_path(submodel_identifier: str, request: Request) -> Any:
-            body = await request.json()
-            return self.service.post_submodel_element(submodel_identifier, body)
+            raise HTTPException(status_code=501, detail="This route is not yet implemented!")
 
         @self.router.put("/{submodel_identifier}/submodel-elements/{id_short_path}")
         async def put_submodel_submodel_elements_id_short_path(submodel_identifier: str, request: Request) -> Any:
