@@ -2,9 +2,9 @@ from typing import Any, MutableMapping, List, Union, Type
 
 from aas_core3 import jsonization
 from aas_core3.types import Submodel, SubmodelElement, AssetAdministrationShell
-from fastapi import HTTPException
 
 from basyx import ObjectStore
+from server.utils.error_handling import CustomErrorResponse
 
 
 class SubmodelService:
@@ -20,7 +20,7 @@ class SubmodelService:
         if isinstance(shell, AssetAdministrationShell):
             return shell.submodels  # FIXME: Typing issues, should this be (safe) casted?
         else:
-            raise HTTPException(status_code=404, detail="AAS " + aas_identifier + " not found")
+            raise CustomErrorResponse(status_code=404, message="AAS " + aas_identifier + " not found")
 
     def _jsonable_submodels(self, submodels: List[Submodel]) \
             -> List[Union[bool, int, float, str, List[Any], MutableMapping[str, Any]]]:
@@ -29,7 +29,7 @@ class SubmodelService:
     def _get_submodel_by_id(self, submodel_id):
         submodel = self.obj_store.get(submodel_id)
         if submodel is None or not isinstance(submodel, Submodel):
-            raise HTTPException(status_code=404, detail="Submodel with id " + submodel_id + " not found")
+            raise CustomErrorResponse(status_code=404, message="Submodel with id " + submodel_id + " not found")
         return submodel
 
     def _get_submodel_element_by_id_short(self, submodel_id, element_id_short):
@@ -50,9 +50,7 @@ class SubmodelService:
         try:
             self.obj_store.add(submodel)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "Submodel processed"}
 
     def get_submodel_jsonable_by_id(self, submodel_id: str):
@@ -63,7 +61,7 @@ class SubmodelService:
         submodel = self._get_submodel_by_id(submodel_id)
         new_submodel = jsonization.submodel_from_jsonable(json)
         if submodel.id != new_submodel.id:
-            raise HTTPException(403, "Submodel with id " + submodel_id + " does not match")
+            raise CustomErrorResponse(status_code=403, message="Submodel with id " + submodel_id + " does not match")
         self.obj_store.discard(submodel)
         self.obj_store.add(new_submodel)
         return jsonization.to_jsonable(new_submodel)
@@ -95,7 +93,7 @@ class SubmodelService:
     def get_submodel_element(self, submodel_id, element_short_id):
         element = self._get_submodel_element_by_id_short(submodel_id, element_short_id)
         if element is None:
-            raise HTTPException(status_code=404, detail="Submodel element with id " + element_short_id + " not found.")
+            raise CustomErrorResponse(status_code=404, message="Submodel element with id " + element_short_id + " not found.")
         return jsonization.to_jsonable(element)
 
     def post_submodel_element(self, submodel_id, body):
@@ -106,16 +104,16 @@ class SubmodelService:
             submodel.submodel_elements.append(submodel_element)
             return jsonization.to_jsonable(submodel_element)
         else:
-            raise HTTPException(status_code=400,
-                                detail="Submodel element with id " + submodel_element.id_short + " already exists")
+            raise CustomErrorResponse(status_code=400,
+                                message="Submodel element with id " + submodel_element.id_short + " already exists")
 
     def put_submodel_element(self, submodel_id, body):
         submodel = self._get_submodel_by_id(submodel_id)
         submodel_element = jsonization.submodel_element_from_jsonable(body)
         existing_submodel_element = self._get_submodel_element_by_id_short(submodel_id, submodel_element.id_short)
         if existing_submodel_element is None:
-            raise HTTPException(status_code=404,
-                                detail="Submodel element with id " + submodel_element.id_short + " does not exist")
+            raise CustomErrorResponse(status_code=404,
+                                message="Submodel element with id " + submodel_element.id_short + " does not exist")
         else:
             submodel.submodel_elements.remove(existing_submodel_element)
             submodel.submodel_elements.append(submodel_element)
@@ -125,7 +123,7 @@ class SubmodelService:
         submodel = self._get_submodel_by_id(submodel_id)
         existing_submodel_element = self._get_submodel_element_by_id_short(submodel_id, id_short)
         if existing_submodel_element is None:
-            raise HTTPException(status_code=404, detail="Submodel element with id " + id_short + " does not exist")
+            raise CustomErrorResponse(status_code=404, message="Submodel element with id " + id_short + " does not exist")
         else:
             submodel.submodel_elements.remove(existing_submodel_element)
             return jsonization.to_jsonable(existing_submodel_element)

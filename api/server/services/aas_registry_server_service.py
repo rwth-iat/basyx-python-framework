@@ -2,9 +2,9 @@ from typing import Any, MutableMapping, List, Union
 
 from aas_core3 import jsonization
 from aas_core3.types import AssetAdministrationShell, ConceptDescription
-from fastapi import HTTPException
 
 from basyx import ObjectStore
+from server.utils.error_handling import CustomErrorResponse
 
 
 class AasRegistryServerService:
@@ -13,9 +13,9 @@ class AasRegistryServerService:
 
     def get_all_asset_administration_shell_descriptors(self) -> List[str]:
         all_descriptors = self.obj_store.get_identifiables_by_type(ConceptDescription)
-        print(all_descriptors.__dict__)
-        print(all_descriptors)
-        print("test")
+        # print(all_descriptors.__dict__)
+        # print(all_descriptors)
+        # print("test")
         aas_descriptors_store = ObjectStore()
         for descriptor in all_descriptors:
             reference_list = descriptor.is_case_of
@@ -26,9 +26,7 @@ class AasRegistryServerService:
                     try:
                         identifiable = self.obj_store.get_identifiable(reference_id)
                     except KeyError as e:
-                        # TODO: Provide a stacktrace
-                        # Wenn anders in Spezifikation, Stacktrace in server log
-                        raise HTTPException(status_code=400, detail=str(e))
+                        raise CustomErrorResponse(status_code=400, exception=e)
 
                     if isinstance(identifiable, AssetAdministrationShell):
                         try:
@@ -48,9 +46,7 @@ class AasRegistryServerService:
         try:
             self.obj_store.add(aas_descriptor)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AAS Descriptor processed"}
 
     def put_asset_administration_shell_descriptor_by_id(self, json):
@@ -60,16 +56,12 @@ class AasRegistryServerService:
             # update?
             self.obj_store.add(aas_descriptor)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AASX package updated"}
 
     def delete_asset_administration_shell_descriptor_by_id(self, descriptor_id):
         try:
             self.obj_store.delete(descriptor_id)  # should there be an exception if there is no aasx_package to delete?
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AASX descriptor deleted"}

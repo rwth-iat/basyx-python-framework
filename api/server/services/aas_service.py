@@ -1,10 +1,10 @@
 from typing import List, Type, Any, MutableMapping, Union
 
 from aas_core3 import jsonization
-from aas_core3.types import AssetAdministrationShell, AssetInformation
-from fastapi import HTTPException
+from aas_core3.types import AssetAdministrationShell
 
 from basyx import ObjectStore
+from server.utils.error_handling import CustomErrorResponse
 
 
 class AasService:
@@ -19,7 +19,7 @@ class AasService:
     def _get_shell_by_id(self, aas_identifier) -> AssetAdministrationShell:
         shell = self.obj_store.get(aas_identifier)
         if shell is None or not isinstance(shell, AssetAdministrationShell):
-            raise HTTPException(status_code=404, detail="Submodel with id " + aas_identifier + " not found")
+            raise CustomErrorResponse(status_code=404, message="Submodel with id " + aas_identifier + " not found")
         return shell
 
     def _jsonable_shells(self, submodels: List[AssetAdministrationShell]) \
@@ -39,16 +39,14 @@ class AasService:
         try:
             self.obj_store.add(shell)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "Shell processed"}
 
     def put_shell_by_id(self, aas_identifier, json):
         shell = self._get_shell_by_id(aas_identifier)
         new_shell = jsonization.asset_administration_shell_from_jsonable(json)
         if shell.id != new_shell.id:
-            raise HTTPException(403, "Shell with id " + aas_identifier + " does not match")
+            raise CustomErrorResponse(status_code=403, message="Shell with id " + aas_identifier + " does not match")
         self.obj_store.discard(shell)
         self.obj_store.add(new_shell)
         return jsonization.to_jsonable(new_shell)

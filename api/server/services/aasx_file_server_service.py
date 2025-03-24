@@ -2,9 +2,9 @@ from typing import Any, MutableMapping, List, Union
 
 from aas_core3.types import AssetAdministrationShell
 from aas_core3 import jsonization
-from fastapi import HTTPException
 
 from basyx import ObjectStore
+from server.utils.error_handling import CustomErrorResponse
 
 
 class AasxFileServerService:
@@ -25,9 +25,7 @@ class AasxFileServerService:
         try:
             self.obj_store.add(aasx_package)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AASX package processed"}
 
     def put_aasx_by_package_id(self, json):
@@ -37,16 +35,12 @@ class AasxFileServerService:
             # update?
             self.obj_store.add(aasx_package)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AASX package updated"}
 
     def delete_aasx_by_package_id(self, package_id):
         try:
             self.obj_store.delete(package_id)  # should there be an exception if there is no aasx_package to delete?
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AASX package deleted"}

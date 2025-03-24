@@ -2,9 +2,9 @@ from typing import Any, MutableMapping, List, Union
 
 from aas_core3 import jsonization
 from aas_core3.types import Submodel, ConceptDescription
-from fastapi import HTTPException
 
 from basyx import ObjectStore
+from server.utils.error_handling import CustomErrorResponse
 
 
 class SubmodelRegistryServerService:
@@ -29,8 +29,7 @@ class SubmodelRegistryServerService:
                     try:
                         identifiable = self.obj_store.get_identifiable(reference_id.value)
                     except KeyError as e:
-                        # TODO: Provide a stacktrace
-                        # Wenn anders in Spezifikation, Stacktrace in server log
+                        # TODO: Handle error? Or is this intended?
                         identifiable = []
                     if isinstance(identifiable, Submodel):
                         try:
@@ -44,9 +43,7 @@ class SubmodelRegistryServerService:
         try:
             aas_descriptor = self.obj_store.get_identifiable(descriptor_id)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         assert isinstance(aas_descriptor, ConceptDescription)
         return jsonization.to_jsonable(aas_descriptor)
 
@@ -61,20 +58,16 @@ class SubmodelRegistryServerService:
                 try:
                     self.obj_store.get_identifiable(reference_id.value)
                 except KeyError as e:
-                    # TODO: Provide a stacktrace
-                    # Wenn anders in Spezifikation, Stacktrace in server log
-                    raise HTTPException(status_code=400, detail= "A referenced submodel of the concept description "
+                    raise CustomErrorResponse(status_code=400, message="A referenced submodel of the concept description "
                                                                  "with the following id does not exist in the "
-                                                                 "object_store:" + str(e))
+                                                                 "object_store", exception=e)
 
         try:
             self.obj_store.add(submodel_descriptor)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail="A referenced submodel of the concept description "
+            raise CustomErrorResponse(status_code=400, detail="A referenced submodel of the concept description "
                                                         "with the following id does not exist in the "
-                                                        "object_store:" + str(e))
+                                                        "object_store:", exception=e)
         return {"message": "Submodel descriptor processed"}
 
     def put_submodel_descriptor_by_id(self, json):
@@ -88,27 +81,21 @@ class SubmodelRegistryServerService:
                 try:
                     self.obj_store.get_identifiable(reference_id.value)
                 except KeyError as e:
-                    # TODO: Provide a stacktrace
-                    # Wenn anders in Spezifikation, Stacktrace in server log
-                    raise HTTPException(status_code=400, detail= "A referenced submodel of the concept description "
+                    raise CustomErrorResponse(status_code=400, detail= "A referenced submodel of the concept description "
                                                                  "with the following id does not exist in the "
-                                                                 "object_store:" + str(e))
+                                                                 "object_store:", exception=e)
 
         try:
             self.obj_store.delete(submodel_descriptor.id)  # should there be an exception if there is no aasx_package to
             # update?
             self.obj_store.add(submodel_descriptor)
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "AASX package updated"}
 
     def delete_submodel_descriptor_by_id(self, descriptor_id):
         try:
             self.obj_store.delete(descriptor_id)  # should there be an exception if there is no aasx_package to delete?
         except KeyError as e:
-            # TODO: Provide a stacktrace
-            # Wenn anders in Spezifikation, Stacktrace in server log
-            raise HTTPException(status_code=400, detail=str(e))
+            raise CustomErrorResponse(status_code=400, exception=e)
         return {"message": "Submodel descriptor deleted"}
