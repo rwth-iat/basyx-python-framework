@@ -95,7 +95,7 @@ jobs:
           sleep 5  # Give the server time to start
       - name: Run aas-test-engines
         run: |
-          aas_test_engines check-server http://127.0.0.1:8080 https://admin-shell.io/aas/API/3/0/AssetAdministrationShellRepositoryServiceSpecification/SSP-002
+          aas_test_engines check_server http://127.0.0.1:8080 https://admin-shell.io/aas/API/3/0/AssetAdministrationShellRepositoryServiceSpecification/SSP-002
       - name: Stop server
         if: ${{ always() }}
         run: |
