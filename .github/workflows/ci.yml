@@ -91,7 +91,7 @@ jobs:
           pip install .[dev]
       - name: Start FastAPI server
         run: |
-          uvicorn api.main:app --host 127.0.0.1 --port 8080 &
+          uvicorn server:app --host 127.0.0.1 --port 8080 &
           sleep 5  # Give the server time to start
       - name: Run aas-test-engines
         run: |
